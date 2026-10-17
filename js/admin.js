@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.co
 import { COURSES_CATALOG } from './courses-data.js';
 import { initNavbar } from './navbar.js';
 
+// Inicializar la barra de navegación con soporte para tema claro/oscuro
 initNavbar();
 
 const formRole = document.getElementById('form-assign-role');
@@ -234,28 +235,33 @@ if (formRole) {
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
-      // Construir los enlaces directos a los cursos
+      // Construcción de los enlaces directos a cada curso
       const originUrl = window.location.origin;
       const coursesLinksFormatted = selectedCourses.map(id => {
         const course = COURSES_CATALOG[id];
         return course ? `- ${course.title}: ${originUrl}/${course.folderPath}` : '';
       }).filter(Boolean).join('\n');
 
-      // Envío de correo electrónico con credenciales configuradas
+      // Envío de correo electrónico con EmailJS y Public Key explícita
       if (typeof emailjs !== 'undefined' && selectedCourses.length > 0) {
-        emailjs.send("service_dsymu5l", "template_0xjhs89", {
-          to_email: email,
-          courses_list: coursesLinksFormatted,
-          dashboard_url: `${originUrl}/dashboard.html`
-        }).then(() => {
-          console.log("Notificación enviada con éxito por correo a " + email);
+        emailjs.send(
+          "service_dsymu5l",
+          "template_pcm3pus",
+          {
+            to_email: email,
+            courses_list: coursesLinksFormatted,
+            dashboard_url: `${originUrl}/dashboard.html`
+          },
+          "Sme5UkbtF9t2q26pn" // <-- Coloca aquí tu Public Key de EmailJS
+        ).then(() => {
+          console.log("Notificación por correo enviada con éxito a " + email);
         }).catch(err => {
           console.warn("Error al enviar el correo vía EmailJS:", err);
         });
       }
 
       statusMsg.style.color = '#15803d';
-      statusMsg.textContent = `¡Guardado con éxito! Accesos asignados a ${email} y correo procesado.`;
+      statusMsg.textContent = `¡Guardado con éxito! Accesos asignados a ${email} y notificación enviada.`;
 
       resetForm();
       await refreshUsersTable();
