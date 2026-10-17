@@ -4,7 +4,6 @@ import { doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.co
 import { COURSES_CATALOG } from './courses-data.js';
 import { initNavbar } from './navbar.js';
 
-// Inicializar el Menú Desplegable con soporte de Tema Claro / Oscuro
 initNavbar();
 
 const formRole = document.getElementById('form-assign-role');
@@ -14,7 +13,6 @@ const statusMsg = document.getElementById('role-status-msg');
 const tableBody = document.getElementById('users-table-body');
 const btnReset = document.getElementById('btn-reset-form');
 
-// Elementos del Modal de Vista Previa
 const previewModal = document.getElementById('preview-student-modal');
 const btnOpenPreviewModal = document.getElementById('btn-open-preview-modal');
 const btnClosePreviewModal = document.getElementById('btn-close-preview-modal');
@@ -24,7 +22,7 @@ const previewStudentsList = document.getElementById('preview-students-list');
 
 let allRegisteredStudents = [];
 
-// 1. Validar sesión y asegurar permisos de Administrador
+// 1. Validar sesión de Administrador
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = 'index.html';
@@ -53,7 +51,7 @@ onAuthStateChanged(auth, async (user) => {
   await refreshUsersTable();
 });
 
-// 2. Cargar la tabla de usuarios y alimentar la lista del modal
+// 2. Cargar tabla de usuarios
 async function refreshUsersTable() {
   try {
     const assignedSnapshot = await getDocs(collection(db, "assigned_roles"));
@@ -74,12 +72,10 @@ async function refreshUsersTable() {
 
       allRegisteredStudents.push({ email, role, allowedCourses });
 
-      // Opciones para autocompletado
       const option = document.createElement('option');
       option.value = email;
       dataList.appendChild(option);
 
-      // Filas de la tabla general
       const tr = document.createElement('tr');
       const coursesHTML = allowedCourses.map(id => {
         const title = COURSES_CATALOG[id] ? COURSES_CATALOG[id].title : id;
@@ -117,7 +113,7 @@ async function refreshUsersTable() {
   }
 }
 
-// 3. Control del Modal de Vista Previa
+// 3. Modal de Vista Previa
 if (btnOpenPreviewModal) {
   btnOpenPreviewModal.addEventListener('click', () => {
     renderPreviewStudentsList(allRegisteredStudents);
@@ -137,14 +133,12 @@ window.addEventListener('click', (e) => {
   }
 });
 
-// Botón de Vista Genérica
 if (btnPreviewGeneric) {
   btnPreviewGeneric.addEventListener('click', () => {
     window.location.href = 'dashboard.html?preview=student';
   });
 }
 
-// Filtrar estudiantes en tiempo real dentro del modal
 if (searchPreviewInput) {
   searchPreviewInput.addEventListener('input', (e) => {
     const query = e.target.value.trim().toLowerCase();
@@ -153,7 +147,6 @@ if (searchPreviewInput) {
   });
 }
 
-// Pinta los elementos de la lista en el modal
 function renderPreviewStudentsList(students) {
   previewStudentsList.innerHTML = '';
 
@@ -181,7 +174,6 @@ function renderPreviewStudentsList(students) {
   });
 }
 
-// 4. Búsqueda y gestión de formulario
 async function fetchUserPermissions(email) {
   if (!email) return;
 
@@ -208,7 +200,7 @@ async function fetchUserPermissions(email) {
       statusMsg.textContent = `Registrando nuevo alumno: ${email}. Selecciona sus cursos.`;
     }
   } catch (error) {
-    console.error("Error al obtener los permisos del usuario:", error);
+    console.error("Error al consultar permisos:", error);
   }
 }
 
@@ -221,9 +213,11 @@ if (emailInput) {
   });
 }
 
+// 4. Guardar accesos y notificar por EmailJS
 if (formRole) {
   formRole.addEventListener('submit', async (e) => {
     e.preventDefault();
+
     const email = emailInput.value.trim().toLowerCase();
     const role = document.getElementById('user-role').value;
 
@@ -232,6 +226,7 @@ if (formRole) {
     checkboxes.forEach(cb => selectedCourses.push(cb.value));
 
     try {
+      // Guardar asignación en Firestore
       await setDoc(doc(db, "assigned_roles", email), {
         email: email,
         role: role,
@@ -239,9 +234,29 @@ if (formRole) {
         updatedAt: new Date().toISOString()
       }, { merge: true });
 
+      // Construir los enlaces directos a los cursos
+      const originUrl = window.location.origin;
+      const coursesLinksFormatted = selectedCourses.map(id => {
+        const course = COURSES_CATALOG[id];
+        return course ? `- ${course.title}: ${originUrl}/${course.folderPath}` : '';
+      }).filter(Boolean).join('\n');
+
+      // Envío de correo electrónico con credenciales configuradas
+      if (typeof emailjs !== 'undefined' && selectedCourses.length > 0) {
+        emailjs.send("service_dsymu5l", "template_0xjhs89", {
+          to_email: email,
+          courses_list: coursesLinksFormatted,
+          dashboard_url: `${originUrl}/dashboard.html`
+        }).then(() => {
+          console.log("Notificación enviada con éxito por correo a " + email);
+        }).catch(err => {
+          console.warn("Error al enviar el correo vía EmailJS:", err);
+        });
+      }
+
       statusMsg.style.color = '#15803d';
-      statusMsg.textContent = `¡Guardado con éxito! Se asignaron ${selectedCourses.length} curso(s) a ${email}.`;
-      
+      statusMsg.textContent = `¡Guardado con éxito! Accesos asignados a ${email} y correo procesado.`;
+
       resetForm();
       await refreshUsersTable();
     } catch (error) {

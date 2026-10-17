@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel de Administración - Cursos</title>
   <link rel="stylesheet" href="css/style.css">
+  
+  <!-- SDK de EmailJS -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      // Reemplaza TU_PUBLIC_KEY_REAL con tu clave de EmailJS (Account -> API Keys)
+      emailjs.init("Sme5UkbtF9t2q26pn");
+    })();
+  </script>
 </head>
 <body>
 
@@ -15,7 +24,6 @@
     </div>
 
     <div class="user-profile">
-      <!-- Botón que abre el Modal de Selección -->
       <button type="button" id="btn-open-preview-modal" class="btn-preview">👁️ Ver como Estudiante</button>
 
       <div class="user-menu-container">
@@ -33,7 +41,6 @@
             <span>⚙️</span> Editar Perfil
           </a>
           
-          <!-- Selector de Tema Claro / Oscuro -->
           <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
             🌙 <span>Modo Oscuro</span>
           </button>
@@ -53,7 +60,6 @@
       </div>
     </div>
   </header>
-  
 
   <main class="container">
     <h2>Gestión de Usuarios y Accesos</h2>
@@ -109,17 +115,15 @@
               <span>Excel 1</span>
             </label>
 
-            <!-- Nueva casilla para Excel 2 -->
             <label class="checkbox-label">
-                <input type="checkbox" name="courses" value="excel-dos">
-                <span>Excel 2</span>
+              <input type="checkbox" name="courses" value="excel-dos">
+              <span>Excel 2</span>
             </label>
-
           </div>
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn-primary">Guardar Accesos</button>
+          <button type="submit" class="btn-primary">Guardar Accesos y Notificar</button>
           <button type="button" id="btn-reset-form" class="btn-secondary">Limpiar Formulario</button>
         </div>
       </form>
