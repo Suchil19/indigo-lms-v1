@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curso: Introducción a la Programación con Python</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <a href="../../dashboard.html" class="btn-back">⬅️ Volver a mis cursos</a>
+    </div>
+    <div class="user-profile">
+      <span id="user-name">Cargando...</span>
+      <button id="btn-logout" class="btn-secondary">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="course-header">
+      <span class="card-tag">Programación</span>
+      <h1>Introducción a la Programación con Python</h1>
+      <p>Aprende las bases de la programación, estructuras de datos y lógica algorítmica.</p>
+    </div>
+
+    <!-- Pestañas de Navegación de Contenido -->
+    <div class="learning-tabs">
+      <button class="tab-btn active" data-tab="video">🎥 Lecciones en Video</button>
+      <button class="tab-btn" data-tab="presentation">📊 Presentaciones (Drive)</button>
+      <button class="tab-btn" data-tab="quiz">📝 Cuestionarios (Forms)</button>
+    </div>
+
+    <!-- PESTAÑA 1: REPRODUCTOR DE VIDEO + PLAYLIST -->
+    <section class="tab-content" id="tab-video">
+      <div class="classroom-layout">
+        
+        <!-- Panel Principal: Video Activo -->
+        <div class="main-content-panel">
+          <div class="iframe-wrapper">
+            <iframe id="main-video-player" src="https://www.youtube.com/embed/rfscVS0vtbw" frameborder="0" allowfullscreen></iframe>
+          </div>
+          <h3 id="current-video-title">Lección 1: Instalación y Variables en Python</h3>
+        </div>
+
+        <!-- Lateral: Lista de Lecciones -->
+        <aside class="sidebar-panel">
+          <h4 class="playlist-title">Contenido del Curso</h4>
+          <div class="playlist-items">
+            <div class="playlist-item active" data-video-id="rfscVS0vtbw" data-title="Lección 1: Instalación y Variables en Python">
+              <span>▶️</span>
+              <span>1. Instalación y Variables</span>
+            </div>
+            <div class="playlist-item" data-video-id="K4I9o52mRkc" data-title="Lección 2: Estructuras Condicionales (If / Else)">
+              <span>▶️</span>
+              <span>2. Estructuras Condicionales</span>
+            </div>
+            <div class="playlist-item" data-video-id="XqZsoesaC5Y" data-title="Lección 3: Bucles y Listas en Python">
+              <span>▶️</span>
+              <span>3. Bucles y Listas</span>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- PESTAÑA 2: PRESENTACIONES EN GOOGLE DRIVE -->
+    <section class="tab-content" id="tab-presentation" hidden>
+      <div class="main-content-panel">
+        <div class="resource-selector">
+          <span>Abrir material en Google Drive:</span>
+          <a href="https://drive.google.com" target="_blank" rel="noopener" class="btn-drive-link">
+            📁 Abrir Carpetas de Materiales en Drive
+          </a>
+        </div>
+        <!-- Visor de carpetas o documentos de Google Drive incrustado -->
+        <div class="iframe-wrapper">
+          <iframe src="https://drive.google.com/embeddedfolderview?id=123456789_ID_DE_TU_CARPETA#list" frameborder="0"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- PESTAÑA 3: CUESTIONARIOS MULTIPLES DE GOOGLE FORMS -->
+    <section class="tab-content" id="tab-quiz" hidden>
+      <div class="main-content-panel">
+        <div class="resource-selector">
+          <label for="form-select"><strong>Selecciona el cuestionario a resolver:</strong></label>
+          <select id="form-select">
+            <option value="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true">Evaluación 1: Conceptos Básicos</option>
+            <option value="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true">Evaluación 2: Control de Flujo</option>
+            <option value="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true">Proyecto Final: Examen Global</option>
+          </select>
+        </div>
+
+        <div class="iframe-wrapper">
+          <iframe id="main-form-iframe" src="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true" frameborder="0"></iframe>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module">
+    import { initNavbar } from '../../js/navbar.js';
+  
+    // Pasar "../../" para ajustar las rutas de redirección
+    initNavbar('../../');
+  </script>
+
+  <script type="module">
+    import { auth } from '../../js/firebase-config.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const userNameSpan = document.getElementById('user-name');
+    const btnLogout = document.getElementById('btn-logout');
+
+    // Elementos Interactivos
+    const mainVideoPlayer = document.getElementById('main-video-player');
+    const currentVideoTitle = document.getElementById('current-video-title');
+    const playlistItems = document.querySelectorAll('.playlist-item');
+    const formSelect = document.getElementById('form-select');
+    const mainFormIframe = document.getElementById('main-form-iframe');
+
+    // 1. Control de Sesión
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = '../../index.html';
+      } else {
+        if (userNameSpan) userNameSpan.textContent = user.displayName || user.email;
+      }
+    });
+
+    if (btnLogout) {
+      btnLogout.addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.href = '../../index.html';
+      });
+    }
+
+    // 2. Alternar entre Pestañas
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.hidden = true);
+
+        const targetTab = e.target.getAttribute('data-tab');
+        e.target.classList.add('active');
+        document.getElementById(`tab-${targetTab}`).hidden = false;
+      });
+    });
+
+    // 3. Selección de Lecciones de la Lista de Videos
+    playlistItems.forEach(item => {
+      item.addEventListener('click', () => {
+        playlistItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+
+        const videoId = item.getAttribute('data-video-id');
+        const videoTitle = item.getAttribute('data-title');
+
+        mainVideoPlayer.src = `https://www.youtube.com/embed/${videoId}`;
+        currentVideoTitle.textContent = videoTitle;
+      });
+    });
+
+    // 4. Selector de Múltiples Cuestionarios (Google Forms)
+    if (formSelect) {
+      formSelect.addEventListener('change', (e) => {
+        mainFormIframe.src = e.target.value;
+      });
+    }
+  </script>
+</body>
+</html>

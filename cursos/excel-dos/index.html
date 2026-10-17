@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curso: Excel 2</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <a href="../../dashboard.html" class="brand-title">Mis Cursos</a>
+    </div>
+
+    <div class="user-profile">
+      <div class="user-menu-container">
+        <button id="user-menu-btn" class="user-menu-btn" type="button">
+          <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
+          <span id="nav-user-name" class="user-name-text">Cargando...</span>
+          <span class="menu-arrow">▼</span>
+        </button>
+
+        <div id="user-dropdown-menu" class="dropdown-menu" hidden>
+          <a href="../../dashboard.html" class="dropdown-item">
+            <span>🏠</span> Mis Cursos
+          </a>
+          <a href="../../profile.html" class="dropdown-item">
+            <span>⚙️</span> Editar Perfil
+          </a>
+          
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
+            🌙 <span>Modo Oscuro</span>
+          </button>
+
+          <div id="admin-menu-option" hidden>
+            <a href="../../admin.html" class="dropdown-item">
+              <span>🛡️</span> Panel Admin
+            </a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
+            <span>🚪</span> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="course-header">
+      <span class="card-tag">Productividad</span>
+      <h1>Excel 2</h1>
+      <p>Aprende fórmulas avanzadas, tablas dinámicas y análisis intermedio de datos.</p>
+    </div>
+
+    <div class="learning-tabs">
+      <button class="tab-btn active" data-tab="video">🎥 Lecciones en Video</button>
+      <button class="tab-btn" data-tab="presentation">📊 Presentaciones (Drive)</button>
+      <button class="tab-btn" data-tab="quiz">📝 Cuestionarios (Forms)</button>
+    </div>
+
+    <!-- Pestaña Video -->
+    <section class="tab-content" id="tab-video">
+      <div class="classroom-layout">
+        <div class="main-content-panel">
+          <div class="iframe-wrapper">
+            <iframe id="main-video-player" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+          </div>
+          <h3 id="current-video-title">Lección 1: Tablas Dinámicas y Filtros Avanzados</h3>
+        </div>
+
+        <aside class="sidebar-panel">
+          <h4 class="playlist-title">Contenido del Curso</h4>
+          <div class="playlist-items">
+            <div class="playlist-item active" data-video-id="dQw4w9WgXcQ" data-title="Lección 1: Tablas Dinámicas">
+              <span>▶️</span>
+              <span>1. Tablas Dinámicas</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Pestaña Drive -->
+    <section class="tab-content" id="tab-presentation" hidden>
+      <div class="main-content-panel">
+        <div class="resource-selector">
+          <a href="https://drive.google.com" target="_blank" rel="noopener" class="btn-drive-link">
+            📁 Abrir Materiales en Google Drive
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña Forms -->
+    <section class="tab-content" id="tab-quiz" hidden>
+      <div class="main-content-panel">
+        <div class="iframe-wrapper">
+          <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true" frameborder="0"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initNavbar } from '../../js/navbar.js';
+    initNavbar('../../');
+  </script>
+</body>
+</html>

@@ -1,18 +1,281 @@
+/* ==========================================
+   VARIABLES DE TEMA (CLARO Y OSCURO)
+   ========================================== */
+
+/* Tema Claro (Por defecto) */
 :root {
     --primary-color: #2563eb;
     --bg-color: #f8fafc;
     --card-bg: #ffffff;
     --text-color: #0f172a;
+    --text-muted: #64748b;
     --border-color: #e2e8f0;
+    --input-bg: #ffffff;
+    --hover-bg: #f1f5f9;
+    --badge-bg: #e0e7ff;
+    --badge-text: #3730a3;
   }
   
+  /* Tema Oscuro */
+  [data-theme="dark"] {
+    --primary-color: #3b82f6;
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-color: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --input-bg: #0f172a;
+    --hover-bg: #334155;
+    --badge-bg: #1e1b4b;
+    --badge-text: #818cf8;
+  }
+  
+  /* Transiciones globales */
   body {
     margin: 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
+  .container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+
+  
+  
+  /* ==========================================
+     NAVBAR & HEADER RESPONSIVE
+     ========================================== */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    box-sizing: border-box;
+  }
+  
+  .brand-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  
+  .btn-back {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  
+  .user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Contenedor del Menú Usuario Desplegable */
+  .user-menu-container {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .user-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    max-width: 100%;
+  }
+  
+  .user-menu-btn:hover,
+  .user-menu-btn.active {
+    background-color: var(--hover-bg);
+  }
+  
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  
+  .user-name-text {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+  
+  .menu-arrow {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  
+  .user-menu-btn.active .menu-arrow {
+    transform: rotate(180deg);
+  }
+  
+  /* Menú Flotante Desplegable */
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
+    z-index: 1000;
+    overflow: hidden;
+    animation: dropdownFade 0.15s ease-out;
+  }
+  
+  @keyframes dropdownFade {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .dropdown-menu[hidden] {
+    display: none !important;
+  }
+  
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.15s;
+  }
+  
+  .dropdown-item:hover {
+    background-color: var(--hover-bg);
+  }
+  
+  .dropdown-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 4px 0;
+  }
+  
+  .text-danger {
+    color: #dc2626;
+  }
+  
+  .text-danger:hover {
+    background-color: rgba(220, 38, 38, 0.1);
+  }
+  
+  /* Banner de Vista Previa para Admin */
+  .preview-banner {
+    background-color: #fef3c7;
+    color: #92400e;
+    border-bottom: 1px solid #fde68a;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+  
+  [data-theme="dark"] .preview-banner {
+    background-color: #78350f;
+    color: #fef3c7;
+    border-bottom-color: #92400e;
+  }
+  
+  .preview-banner a {
+    color: #b45309;
+    text-decoration: underline;
+    margin-left: 10px;
+  }
+  
+  [data-theme="dark"] .preview-banner a {
+    color: #fde68a;
+  }
+  
+  /* ==========================================
+     BOTONES Y ACCIONES
+     ========================================== */
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .btn-secondary {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--hover-bg);
+  }
+  
+  .btn-preview {
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+  
+  /* ==========================================
+     AUTENTICACIÓN (LOGIN)
+     ========================================== */
   .auth-layout {
     display: flex;
     justify-content: center;
@@ -28,6 +291,7 @@
     text-align: center;
     max-width: 400px;
     width: 90%;
+    border: 1px solid var(--border-color);
   }
   
   .btn-google {
@@ -39,7 +303,8 @@
     padding: 12px 16px;
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background-color: #ffffff;
+    background-color: var(--card-bg);
+    color: var(--text-color);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -47,7 +312,7 @@
   }
   
   .btn-google:hover {
-    background-color: #f1f5f9;
+    background-color: var(--hover-bg);
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   }
   
@@ -56,64 +321,17 @@
     height: 20px;
   }
   
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-  }
-  
-  .btn-secondary {
-    padding: 8px 16px;
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  
   .error-message {
     color: #dc2626;
     font-size: 0.875rem;
     margin-top: 1rem;
   }
   
-  .preview-banner {
-    background-color: #fef3c7;
-    color: #92400e;
-    border-bottom: 1px solid #fde68a;
-    padding: 10px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 0.9rem;
-  }
-  
-  .preview-banner a {
-    color: #b45309;
-    text-decoration: underline;
-    margin-left: 10px;
-  }
-  
-  .btn-preview {
-    background: #e0e7ff;
-    color: #3730a3;
-    padding: 6px 12px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-right: 15px;
-  }
-  
+  /* ==========================================
+     ADMINISTRACIÓN Y TABLAS
+     ========================================== */
   .admin-card {
-    background: white;
+    background: var(--card-bg);
     padding: 20px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
@@ -122,42 +340,11 @@
   
   .form-role {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     margin-top: 15px;
     flex-wrap: wrap;
   }
   
-  .form-role input, .form-role select {
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 0.95rem;
-  }
-  
-  .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   .form-group {
     display: flex;
     flex-direction: column;
@@ -166,7 +353,32 @@
   
   .full-width {
     width: 100%;
-    margin-top: 10px;
+  }
+  
+  .search-box {
+    position: relative;
+    width: 100%;
+  }
+  
+  .search-box input, 
+  .form-role select, 
+  .resource-selector select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+  }
+  
+  .search-box input:focus,
+  .form-role select:focus,
+  .resource-selector select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
   
   .courses-checkbox-grid {
@@ -185,6 +397,7 @@
     gap: 10px;
     font-size: 0.9rem;
     cursor: pointer;
+    color: var(--text-color);
   }
   
   .checkbox-label input[type="checkbox"] {
@@ -192,34 +405,309 @@
     height: 18px;
     cursor: pointer;
   }
-
-
-
-
-
-
-
-  .search-box {
-    position: relative;
+  
+  .form-actions {
+    display: flex;
+    gap: 10px;
     width: 100%;
+    margin-top: 10px;
   }
   
-  .search-box input {
+  .table-responsive {
     width: 100%;
-    padding: 12px 14px;
+    overflow-x: auto;
+    margin-top: 15px;
+  }
+  
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    text-align: left;
+  }
+  
+  .users-table th, .users-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .users-table th {
+    background-color: var(--bg-color);
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  
+  .users-table tr:hover {
+    background-color: var(--hover-bg);
+  }
+  
+  .badge-role {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+  
+  .badge-admin {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  [data-theme="dark"] .badge-admin {
+    background-color: #78350f;
+    color: #fef3c7;
+  }
+  
+  .badge-student {
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+  }
+  
+  .course-tag-item {
+    display: inline-block;
+    background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin: 2px;
   }
   
-  .search-box input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  .text-center {
+    text-align: center;
+    color: var(--text-muted);
   }
   
   .status-msg {
     margin-top: 15px;
     font-weight: 500;
+  }
+  
+  /* ==========================================
+     MODAL FLOTANTE CORREGIDO
+     ========================================== */
+  .modal[hidden] {
+    display: none !important;
+  }
+  
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 500px;
+    max-height: 85vh;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 1.6rem;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .close-btn:hover {
+    color: var(--primary-color);
+  }
+  
+  .preview-generic-box {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .preview-students-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    margin-top: 10px;
+  }
+  
+  .preview-student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  
+  .preview-student-item:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--primary-color);
+  }
+  
+  .preview-student-email {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+  
+  .preview-student-courses {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  
+  /* ==========================================
+     DASHBOARD Y TARJETAS DE CURSOS
+     ========================================== */
+  .status-info {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+  
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  .course-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+  
+  .card-tag {
+    align-self: flex-start;
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .course-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.15rem;
+    color: var(--text-color);
+  }
+  
+  .course-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+  }
+  
+  .btn-start-course {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  /* ==========================================
+     PERFIL DE USUARIO
+     ========================================== */
+  .profile-card {
+    max-width: 600px;
+    margin: 2rem auto;
+  }
+  
+  .avatar-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  .help-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  
+  /* ==========================================
+     MEDIA QUERIES (ADAPTABILIDAD RESPONSIVE)
+     ========================================== */
+  @media (max-width: 600px) {
+    .navbar {
+      padding: 0.6rem 1rem;
+    }
+  
+    .brand-title {
+      font-size: 1.1rem;
+    }
+  
+    .user-name-text {
+      max-width: 90px;
+      font-size: 0.8rem;
+    }
+  
+    .user-menu-btn {
+      padding: 3px 8px;
+      gap: 6px;
+    }
+  
+    .nav-avatar {
+      width: 28px;
+      height: 28px;
+    }
+  
+    .dropdown-menu {
+      right: -5px;
+      min-width: 200px;
+    }
   }

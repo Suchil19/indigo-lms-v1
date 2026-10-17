@@ -17,36 +17,39 @@ export async function syncUserProfile(user) {
     const userDocRef = doc(db, "users", user.uid);
     const userSnap = await getDoc(userDocRef);
 
-    // 1. Si el usuario YA existe en la base de datos y YA es admin, MANTENER el rol de admin
-    if (userSnap.exists() && userSnap.data().role === 'admin') {
-      await setDoc(userDocRef, {
-        lastLogin: new Date().toISOString()
-      }, { merge: true });
-      return 'admin';
-    }
-
-    // 2. Si no es admin en "users", buscar si tiene un rol pre-asignado en "assigned_roles"
     const assignedRoleRef = doc(db, "assigned_roles", emailKey);
     const assignedSnap = await getDoc(assignedRoleRef);
 
-    let finalRole = "student"; // Valor por defecto
-
+    let finalRole = "student";
     if (assignedSnap.exists() && assignedSnap.data().role) {
       finalRole = assignedSnap.data().role;
     } else if (userSnap.exists() && userSnap.data().role) {
-      // Conservar el rol existente si no hay cambio en assigned_roles
       finalRole = userSnap.data().role;
     }
 
-    // 3. Actualizar el documento en Firestore sin perder el rol
-    await setDoc(userDocRef, {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      role: finalRole,
-      lastLogin: new Date().toISOString()
-    }, { merge: true });
+    // Datos base de Google
+    const googlePhoto = user.photoURL || '';
+    const googleName = user.displayName || user.email;
+
+    if (!userSnap.exists()) {
+      // Guardado inicial con foto de Gmail/Google
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        email: user.email,
+        displayName: googleName,
+        alias: '',
+        photoURL: googlePhoto,
+        googlePhotoURL: googlePhoto,
+        role: finalRole,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString()
+      });
+    } else {
+      // Si ya existe, actualizamos última conexión sin borrar alias o foto personalizada
+      await setDoc(userDocRef, {
+        lastLogin: new Date().toISOString()
+      }, { merge: true });
+    }
 
     return finalRole;
   } catch (error) {
@@ -55,7 +58,6 @@ export async function syncUserProfile(user) {
   }
 }
 
-// Redirección según estado de autenticación
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     const role = await syncUserProfile(user);

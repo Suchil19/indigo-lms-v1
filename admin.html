@@ -8,31 +8,69 @@
 </head>
 <body>
 
+  <!-- Header Responsive con Menú Desplegable -->
   <header class="navbar admin-navbar">
-    <div class="logo">Panel de Control (Admin)</div>
+    <div class="logo">
+      <a href="admin.html" class="brand-title">Panel Admin</a>
+    </div>
+
     <div class="user-profile">
-      <a href="dashboard.html?preview=student" class="btn-preview">👁️ Ver como Estudiante</a>
-      <span id="user-name">Cargando...</span>
-      <button id="btn-logout" class="btn-secondary">Cerrar Sesión</button>
+      <!-- Botón que abre el Modal de Selección -->
+      <button type="button" id="btn-open-preview-modal" class="btn-preview">👁️ Ver como Estudiante</button>
+
+      <div class="user-menu-container">
+        <button id="user-menu-btn" class="user-menu-btn" type="button">
+          <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
+          <span id="nav-user-name" class="user-name-text">Cargando...</span>
+          <span class="menu-arrow">▼</span>
+        </button>
+
+        <div id="user-dropdown-menu" class="dropdown-menu" hidden>
+          <a href="dashboard.html" class="dropdown-item">
+            <span>🏠</span> Mis Cursos
+          </a>
+          <a href="profile.html" class="dropdown-item">
+            <span>⚙️</span> Editar Perfil
+          </a>
+          
+          <!-- Selector de Tema Claro / Oscuro -->
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
+            🌙 <span>Modo Oscuro</span>
+          </button>
+
+          <div id="admin-menu-option">
+            <a href="admin.html" class="dropdown-item">
+              <span>🛡️</span> Panel Admin
+            </a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
+            <span>🚪</span> Cerrar Sesión
+          </button>
+        </div>
+      </div>
     </div>
   </header>
+  
 
   <main class="container">
     <h2>Gestión de Usuarios y Accesos</h2>
     
+    <!-- Formulario para agregar / editar alumno -->
     <section class="admin-card">
-      <h3>Buscar Estudiante y Asignar Cursos</h3>
+      <h3 id="form-title">Agregar / Modificar Alumno</h3>
       <form id="form-assign-role" class="form-role">
         
-        <!-- Campo de Búsqueda con autocompletado -->
         <div class="form-group full-width">
-          <label for="user-email">Buscar o Ingresar Correo Electrónico:</label>
+          <label for="user-email">Correo Electrónico del Alumno:</label>
           <div class="search-box">
             <input 
               type="email" 
               id="user-email" 
               list="users-datalist" 
-              placeholder="Escribe para buscar o ingresar un correo..." 
+              placeholder="correo.alumno@ejemplo.com" 
               autocomplete="off"
               required
             >
@@ -48,39 +86,97 @@
           </select>
         </div>
 
-        <!-- Selección de los 4 Cursos -->
         <div class="form-group full-width">
           <label>Cursos Permitidos:</label>
           <div class="courses-checkbox-grid">
             <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="curso-1">
-              <span>Introducción al Desarrollo Web Standard</span>
+              <input type="checkbox" name="courses" value="python-intro">
+              <span>Introducción a la Programación con Python</span>
             </label>
 
             <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="curso-2">
-              <span>JavaScript Moderno y Firebase ES6</span>
+              <input type="checkbox" name="courses" value="diseno-ux">
+              <span>Diseño UX</span>
             </label>
 
             <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="curso-3">
-              <span>Arquitectura Web y Control de Accesos</span>
+              <input type="checkbox" name="courses" value="diseno-web-intro">
+              <span>Introducción al Diseño Web</span>
             </label>
 
             <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="curso-4">
-              <span>Integración con Google Apps y Forms</span>
+              <input type="checkbox" name="courses" value="excel-1">
+              <span>Excel 1</span>
             </label>
+
+            <!-- Nueva casilla para Excel 2 -->
+            <label class="checkbox-label">
+                <input type="checkbox" name="courses" value="excel-dos">
+                <span>Excel 2</span>
+            </label>
+
           </div>
         </div>
 
-        <button type="submit" class="btn-primary">Guardar Accesos del Usuario</button>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">Guardar Accesos</button>
+          <button type="button" id="btn-reset-form" class="btn-secondary">Limpiar Formulario</button>
+        </div>
       </form>
       <p id="role-status-msg" class="status-msg"></p>
     </section>
+
+    <!-- Tabla de Alumnos -->
+    <section class="admin-card">
+      <h3>Lista de Alumnos y Cursos Asignados</h3>
+      <div class="table-responsive">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Correo Electrónico</th>
+              <th>Rol</th>
+              <th>Cursos Asignados</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body">
+            <tr>
+              <td colspan="4" class="text-center">Cargando lista de usuarios...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
-  <script type="module" src="js/firebase-config.js"></script>
+  <!-- MODAL DE SELECCIÓN DE VISTA PREVIA -->
+  <div id="preview-student-modal" class="modal" hidden>
+    <div class="modal-content">
+      <button type="button" id="btn-close-preview-modal" class="close-btn">&times;</button>
+      <h3>Seleccionar Estudiante para Vista Previa</h3>
+      <p class="help-text">Selecciona un alumno o escribe su correo para probar su experiencia en la plataforma:</p>
+      
+      <div class="form-group full-width" style="margin: 15px 0;">
+        <input 
+          type="search" 
+          id="search-preview-input" 
+          placeholder="🔍 Escribe para filtrar por correo..." 
+          style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); box-sizing: border-box;"
+        >
+      </div>
+
+      <div class="preview-generic-box">
+        <button type="button" id="btn-preview-generic" class="btn-secondary full-width">
+          👁️ Vista Previa Genérica (Tus Permisos)
+        </button>
+      </div>
+
+      <div id="preview-students-list" class="preview-students-list">
+        <!-- Lista dinámica de estudiantes -->
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/admin.js"></script>
 </body>
 </html>

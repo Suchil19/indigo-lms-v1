@@ -8,27 +8,64 @@
 </head>
 <body>
 
-  <!-- Banner de aviso si el administrador está explorando la vista de estudiante -->
+  <!-- Banner para vista previa de Administrador -->
   <div id="admin-preview-banner" class="preview-banner" hidden>
     Modo Vista de Estudiante Activo. <a href="admin.html">Regresar al Panel de Administrador</a>
   </div>
 
+  <!-- Encabezado con Menú Desplegable y Conmutador de Tema -->
   <header class="navbar">
-    <div class="logo" id="tenant-logo">Mis Cursos</div>
+    <div class="logo">
+      <a href="dashboard.html" class="brand-title">Mis Cursos</a>
+    </div>
+
     <div class="user-profile">
-      <span id="user-name">Cargando...</span>
-      <button id="btn-logout" class="btn-secondary">Cerrar Sesión</button>
+      <div class="user-menu-container">
+        <button id="user-menu-btn" class="user-menu-btn">
+          <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
+          <span id="nav-user-name" class="user-name-text">Cargando...</span>
+          <span class="menu-arrow">▼</span>
+        </button>
+
+        <div id="user-dropdown-menu" class="dropdown-menu" hidden>
+          <a href="dashboard.html" class="dropdown-item">
+            <span>🏠</span> Mis Cursos
+          </a>
+          <a href="profile.html" class="dropdown-item">
+            <span>⚙️</span> Editar Perfil
+          </a>
+          
+          <!-- Botón para alternar Tema Claro / Oscuro -->
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
+            🌙 <span>Modo Oscuro</span>
+          </button>
+
+          <div id="admin-menu-option" hidden>
+            <a href="admin.html" class="dropdown-item">
+              <span>🛡️</span> Panel Admin
+            </a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <button id="btn-dropdown-logout" class="dropdown-item text-danger">
+            <span>🚪</span> Cerrar Sesión
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
+  <!-- Contenido Principal -->
   <main class="container">
     <h2>Tus Cursos Disponibles</h2>
-    <div id="courses-grid" class="courses-grid">
-      <!-- Carga dinámica de contenidos -->
-    </div>
+    
+    <div id="courses-status-msg" class="status-info">Cargando cursos asignados...</div>
+
+    <!-- Cuadrícula dinámica de Tarjetas -->
+    <div id="courses-grid" class="courses-grid"></div>
   </main>
 
-  <script type="module" src="js/firebase-config.js"></script>
   <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
