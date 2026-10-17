@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Cursos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="navbar admin-navbar">
+    <div class="logo">Panel de Control (Admin)</div>
+    <div class="user-profile">
+      <a href="dashboard.html?preview=student" class="btn-preview">👁️ Ver como Estudiante</a>
+      <span id="user-name">Cargando...</span>
+      <button id="btn-logout" class="btn-secondary">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2>Gestión de Usuarios y Accesos</h2>
+    
+    <section class="admin-card">
+      <h3>Buscar Estudiante y Asignar Cursos</h3>
+      <form id="form-assign-role" class="form-role">
+        
+        <!-- Campo de Búsqueda con autocompletado -->
+        <div class="form-group full-width">
+          <label for="user-email">Buscar o Ingresar Correo Electrónico:</label>
+          <div class="search-box">
+            <input 
+              type="email" 
+              id="user-email" 
+              list="users-datalist" 
+              placeholder="Escribe para buscar o ingresar un correo..." 
+              autocomplete="off"
+              required
+            >
+            <datalist id="users-datalist"></datalist>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="user-role">Rol asignado:</label>
+          <select id="user-role">
+            <option value="student">Estudiante</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+
+        <!-- Selección de los 4 Cursos -->
+        <div class="form-group full-width">
+          <label>Cursos Permitidos:</label>
+          <div class="courses-checkbox-grid">
+            <label class="checkbox-label">
+              <input type="checkbox" name="courses" value="curso-1">
+              <span>Introducción al Desarrollo Web Standard</span>
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" name="courses" value="curso-2">
+              <span>JavaScript Moderno y Firebase ES6</span>
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" name="courses" value="curso-3">
+              <span>Arquitectura Web y Control de Accesos</span>
+            </label>
+
+            <label class="checkbox-label">
+              <input type="checkbox" name="courses" value="curso-4">
+              <span>Integración con Google Apps y Forms</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Guardar Accesos del Usuario</button>
+      </form>
+      <p id="role-status-msg" class="status-msg"></p>
+    </section>
+  </main>
+
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
