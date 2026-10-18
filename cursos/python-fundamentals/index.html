@@ -3,174 +3,140 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Curso: Introducción a la Programación con Python</title>
+  <title>Aula Virtual - Curso</title>
+  
+  <!-- Rutas relativas estándar subiendo 2 niveles hasta la raíz -->
   <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="css/course.css">
 </head>
 <body>
 
+  <!-- Preload Screen Global -->
+  <div id="app-preload" class="preload-screen">
+    <div class="preload-content">
+      <div class="spinner"></div>
+      <p class="preload-text">Cargando curso...</p>
+    </div>
+  </div>
+
+  <!-- Header Responsive Global -->
   <header class="navbar">
     <div class="logo">
-      <a href="../../dashboard.html" class="btn-back">⬅️ Volver a mis cursos</a>
+      <a href="../../dashboard.html" class="brand-title">Plataforma Educativa</a>
     </div>
+
     <div class="user-profile">
-      <span id="user-name">Cargando...</span>
-      <button id="btn-logout" class="btn-secondary">Cerrar Sesión</button>
+      <div class="user-menu-container">
+        <button id="user-menu-btn" class="user-menu-btn" type="button">
+          <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
+          <span id="nav-user-name" class="user-name-text">Cargando...</span>
+          <span class="menu-arrow">▼</span>
+        </button>
+
+        <div id="user-dropdown-menu" class="dropdown-menu" hidden>
+          <a href="../../dashboard.html" class="dropdown-item"><span>🏠</span> Mis Cursos</a>
+          
+          <div id="teacher-menu-option" hidden>
+            <a href="../../teacher.html" class="dropdown-item"><span>👨‍🏫</span> Panel Profesor</a>
+          </div>
+
+          <a href="../../profile.html" class="dropdown-item"><span>⚙️</span> Editar Perfil</a>
+          
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
+            🌙 <span>Modo Oscuro</span>
+          </button>
+
+          <div id="admin-menu-option" hidden>
+            <a href="../../admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
+            <span>🚪</span> Cerrar Sesión
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <div class="course-header">
-      <span class="card-tag">Programación</span>
-      <h1>Introducción a la Programación con Python</h1>
-      <p>Aprende las bases de la programación, estructuras de datos y lógica algorítmica.</p>
-    </div>
+  <!-- CONTENEDOR DE LA APLICACIÓN (SIDEBAR + CONTENIDO) -->
+  <div class="app-layout">
+    <!-- El sidebar se construye automáticamente mediante js/sidebar.js -->
+    <aside id="global-sidebar" class="global-sidebar"></aside>
 
-    <!-- Pestañas de Navegación de Contenido -->
-    <div class="learning-tabs">
-      <button class="tab-btn active" data-tab="video">🎥 Lecciones en Video</button>
-      <button class="tab-btn" data-tab="presentation">📊 Presentaciones (Drive)</button>
-      <button class="tab-btn" data-tab="quiz">📝 Cuestionarios (Forms)</button>
-    </div>
+    <!-- CONTENIDO PRINCIPAL DEL CURSO -->
+    <main class="main-wrapper">
+      <div class="course-page-header" style="margin-bottom: 20px;">
+        <h2>🐍 Nombre del Curso</h2>
+        <p style="color: var(--text-secondary); margin: 4px 0 0 0;">Módulo 1: Lecciones y Evaluaciones</p>
+      </div>
 
-    <!-- PESTAÑA 1: REPRODUCTOR DE VIDEO + PLAYLIST -->
-    <section class="tab-content" id="tab-video">
-      <div class="classroom-layout">
+      <div class="coursera-content" style="display: flex; flex-direction: column; gap: 25px;">
         
-        <!-- Panel Principal: Video Activo -->
-        <div class="main-content-panel">
-          <div class="iframe-wrapper">
-            <iframe id="main-video-player" src="https://www.youtube.com/embed/rfscVS0vtbw" frameborder="0" allowfullscreen></iframe>
+        <!-- SECCIÓN 1: VIDEO YOUTUBE EMBED -->
+        <section id="seccion-video" class="admin-card" style="border-left: 4px solid #2563eb;">
+          <h3>🎥 Clase 1: Video Explicativo</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Visualiza la clase en video sobre el tema del módulo.
+          </p>
+
+          <div class="content-frame-container" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; border: 1px solid var(--border-color); background: #000;">
+            <!-- REEMPLAZA ESTA URL CON TU ENLACE DE YOUTUBE EMBED -->
+            <iframe 
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+              title="Clase 1" 
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+              allowfullscreen>
+            </iframe>
           </div>
-          <h3 id="current-video-title">Lección 1: Instalación y Variables en Python</h3>
-        </div>
+        </section>
 
-        <!-- Lateral: Lista de Lecciones -->
-        <aside class="sidebar-panel">
-          <h4 class="playlist-title">Contenido del Curso</h4>
-          <div class="playlist-items">
-            <div class="playlist-item active" data-video-id="rfscVS0vtbw" data-title="Lección 1: Instalación y Variables en Python">
-              <span>▶️</span>
-              <span>1. Instalación y Variables</span>
-            </div>
-            <div class="playlist-item" data-video-id="K4I9o52mRkc" data-title="Lección 2: Estructuras Condicionales (If / Else)">
-              <span>▶️</span>
-              <span>2. Estructuras Condicionales</span>
-            </div>
-            <div class="playlist-item" data-video-id="XqZsoesaC5Y" data-title="Lección 3: Bucles y Listas en Python">
-              <span>▶️</span>
-              <span>3. Bucles y Listas</span>
-            </div>
+        <!-- SECCIÓN 2: PRESENTACIÓN GOOGLE DRIVE EMBED -->
+        <section id="seccion-drive" class="admin-card" style="border-left: 4px solid #10b981;">
+          <h3>📊 Diapositivas de la Lección (Google Drive)</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Consulta la presentación cargada en Google Drive.
+          </p>
+
+          <div class="content-frame-container" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; border: 1px solid var(--border-color); background: #000;">
+            <!-- REEMPLAZA ESTA URL CON TU ENLACE INCRUSTADO DE GOOGLE DRIVE / SLIDES -->
+            <iframe 
+              src="https://docs.google.com/presentation/d/e/2PACX-1vQ/embed?start=false&loop=false&delayms=3000" 
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+              allowfullscreen="true">
+            </iframe>
           </div>
-        </aside>
+        </section>
+
+        <!-- SECCIÓN 3: FORMULARIO GOOGLE FORMS EMBED -->
+        <section id="seccion-forms" class="admin-card" style="border-left: 4px solid #f59e0b;">
+          <h3>📝 Cuestionario de Evaluación (Google Forms)</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Responde la evaluación interactiva para registrar tu aprendizaje.
+          </p>
+
+          <div class="form-frame-container" style="width: 100%; min-height: 650px; border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; background: var(--card-bg);">
+            <!-- REEMPLAZA ESTA URL CON TU ENLACE DE GOOGLE FORM (TERMINACIÓN /viewform?embedded=true) -->
+            <iframe 
+              src="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true"
+              style="width: 100%; height: 650px; border: 0;">
+              Cargando cuestionario...
+            </iframe>
+          </div>
+        </section>
 
       </div>
-    </section>
+    </main>
+  </div>
 
-    <!-- PESTAÑA 2: PRESENTACIONES EN GOOGLE DRIVE -->
-    <section class="tab-content" id="tab-presentation" hidden>
-      <div class="main-content-panel">
-        <div class="resource-selector">
-          <span>Abrir material en Google Drive:</span>
-          <a href="https://drive.google.com" target="_blank" rel="noopener" class="btn-drive-link">
-            📁 Abrir Carpetas de Materiales en Drive
-          </a>
-        </div>
-        <!-- Visor de carpetas o documentos de Google Drive incrustado -->
-        <div class="iframe-wrapper">
-          <iframe src="https://drive.google.com/embeddedfolderview?id=123456789_ID_DE_TU_CARPETA#list" frameborder="0"></iframe>
-        </div>
-      </div>
-    </section>
-
-    <!-- PESTAÑA 3: CUESTIONARIOS MULTIPLES DE GOOGLE FORMS -->
-    <section class="tab-content" id="tab-quiz" hidden>
-      <div class="main-content-panel">
-        <div class="resource-selector">
-          <label for="form-select"><strong>Selecciona el cuestionario a resolver:</strong></label>
-          <select id="form-select">
-            <option value="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true">Evaluación 1: Conceptos Básicos</option>
-            <option value="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true">Evaluación 2: Control de Flujo</option>
-            <option value="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true">Proyecto Final: Examen Global</option>
-          </select>
-        </div>
-
-        <div class="iframe-wrapper">
-          <iframe id="main-form-iframe" src="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true" frameborder="0"></iframe>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
+  <!-- Inicializar controladores globales (Navbar y Sidebar dinámico) -->
   <script type="module">
     import { initNavbar } from '../../js/navbar.js';
-  
-    // Pasar "../../" para ajustar las rutas de redirección
-    initNavbar('../../');
-  </script>
+    import { initSidebar } from '../../js/sidebar.js';
 
-  <script type="module">
-    import { auth } from '../../js/firebase-config.js';
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const userNameSpan = document.getElementById('user-name');
-    const btnLogout = document.getElementById('btn-logout');
-
-    // Elementos Interactivos
-    const mainVideoPlayer = document.getElementById('main-video-player');
-    const currentVideoTitle = document.getElementById('current-video-title');
-    const playlistItems = document.querySelectorAll('.playlist-item');
-    const formSelect = document.getElementById('form-select');
-    const mainFormIframe = document.getElementById('main-form-iframe');
-
-    // 1. Control de Sesión
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = '../../index.html';
-      } else {
-        if (userNameSpan) userNameSpan.textContent = user.displayName || user.email;
-      }
-    });
-
-    if (btnLogout) {
-      btnLogout.addEventListener('click', async () => {
-        await signOut(auth);
-        window.location.href = '../../index.html';
-      });
-    }
-
-    // 2. Alternar entre Pestañas
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.hidden = true);
-
-        const targetTab = e.target.getAttribute('data-tab');
-        e.target.classList.add('active');
-        document.getElementById(`tab-${targetTab}`).hidden = false;
-      });
-    });
-
-    // 3. Selección de Lecciones de la Lista de Videos
-    playlistItems.forEach(item => {
-      item.addEventListener('click', () => {
-        playlistItems.forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-
-        const videoId = item.getAttribute('data-video-id');
-        const videoTitle = item.getAttribute('data-title');
-
-        mainVideoPlayer.src = `https://www.youtube.com/embed/${videoId}`;
-        currentVideoTitle.textContent = videoTitle;
-      });
-    });
-
-    // 4. Selector de Múltiples Cuestionarios (Google Forms)
-    if (formSelect) {
-      formSelect.addEventListener('change', (e) => {
-        mainFormIframe.src = e.target.value;
-      });
-    }
+    initNavbar();
+    initSidebar();
   </script>
 </body>
 </html>

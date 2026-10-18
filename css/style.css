@@ -711,3 +711,538 @@
       min-width: 200px;
     }
   }
+
+
+
+
+
+  /* ==========================================================================
+   ESTILOS DEL AULA VIRTUAL Y MENÚ FLOTANTE RESPONSIVO
+   ========================================================================== */
+
+.course-page-header {
+  margin-bottom: 10px;
+}
+
+.course-subtitle {
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
+}
+
+/* Layout en cuadrícula */
+.coursera-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 25px;
+  margin-top: 20px;
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   BARRA LATERAL / MENÚ FLOTANTE (ESCRITORIO)
+   -------------------------------------------------------------------------- */
+.coursera-sidebar {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px;
+  height: fit-content;
+  position: sticky;
+  top: 90px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.sidebar-header-mobile {
+  display: none; /* Solo visible en teléfonos */
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header-mobile h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.close-sidebar-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.sidebar-section-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin: 16px 0 8px 0;
+  font-weight: 700;
+}
+
+.coursera-sidebar .sidebar-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.coursera-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.coursera-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.coursera-menu-item:hover {
+  background: var(--input-bg);
+  color: #2563eb;
+  transform: translateX(3px);
+}
+
+.coursera-menu-item.active {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  font-weight: 700;
+  border-left: 3px solid #2563eb;
+}
+
+/* --------------------------------------------------------------------------
+   ÁREA DE CONTENIDO Y MARCOS
+   -------------------------------------------------------------------------- */
+.coursera-content {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.section-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 15px;
+}
+
+.card-video {
+  border-left: 4px solid #2563eb;
+}
+
+.card-drive {
+  border-left: 4px solid #10b981;
+}
+
+.card-forms {
+  border-left: 4px solid #f59e0b;
+}
+
+.content-frame-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: #000;
+}
+
+.content-frame-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.form-frame-container {
+  width: 100%;
+  min-height: 650px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  background: var(--card-bg);
+}
+
+.form-frame-container iframe {
+  width: 100%;
+  height: 650px;
+  border: 0;
+}
+
+/* Botón flotante móvil (FAB) - Oculto en PC */
+.mobile-fab-menu {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* --------------------------------------------------------------------------
+   ADAPTACIÓN RESPONSIVA MÓVIL (MENÚ DESPLEGABLE TIPO OFF-CANVAS)
+   -------------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .coursera-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .coursera-sidebar {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Oculto a la derecha */
+    width: 290px;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+    border-left: 1px solid var(--border-color);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .coursera-sidebar.open {
+    right: 0; /* Deslizar hacia adentro */
+  }
+
+  .sidebar-header-mobile {
+    display: flex;
+  }
+
+  /* Mostrar Botón Flotante (FAB) */
+  .mobile-fab-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: fixed;
+    bottom: 25px;
+    right: 20px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    z-index: 997;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .mobile-fab-menu:active {
+    transform: scale(0.95);
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==========================================================================
+   MENÚ LATERAL UNIFICADO Y RESPONSIVO (SIDEBAR)
+   ========================================================================== */
+
+/* Layout Global con Sidebar */
+.app-layout {
+  display: flex;
+  min-height: calc(100vh - 65px);
+  position: relative;
+}
+
+/* Estructura del Sidebar */
+.global-sidebar {
+  width: 280px;
+  background: var(--card-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+  position: sticky;
+  top: 65px;
+  height: calc(100vh - 65px);
+  z-index: 90;
+  flex-shrink: 0;
+}
+
+/* Estado Colapsado en Escritorio */
+.global-sidebar.collapsed {
+  width: 70px;
+}
+
+.global-sidebar.collapsed .sidebar-text,
+.global-sidebar.collapsed .sidebar-section-header,
+.global-sidebar.collapsed .sidebar-badge {
+  display: none !important;
+}
+
+.global-sidebar.collapsed .sidebar-link {
+  justify-content: center;
+  padding: 12px;
+}
+
+/* Cabecera del Sidebar (Flecha de retorno / Colapso) */
+.sidebar-top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.btn-sidebar-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.btn-sidebar-back:hover {
+  background: var(--input-bg);
+  color: #2563eb;
+}
+
+.btn-sidebar-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-sidebar-toggle:hover {
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+/* Contenido y Listas del Sidebar */
+.sidebar-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.sidebar-section-header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin: 16px 8px 6px 8px;
+  font-weight: 700;
+}
+
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-item {
+  margin-bottom: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background: var(--input-bg);
+  color: #2563eb;
+}
+
+.sidebar-link.active {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.sidebar-icon {
+  font-size: 1.1rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.sidebar-badge {
+  margin-left: auto;
+  background: rgba(37, 99, 235, 0.15);
+  color: #2563eb;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+/* Área Principal que Contiene la Vista */
+.main-wrapper {
+  flex: 1;
+  padding: 20px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Botón Flotante Móvil (FAB) */
+.sidebar-mobile-fab {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  z-index: 995;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-overlay-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 990;
+}
+
+/* Adaptación a Pantallas Pequeñas (Móviles / Tablets) */
+@media (max-width: 900px) {
+  .global-sidebar {
+    position: fixed;
+    top: 0;
+    left: -290px;
+    height: 100vh;
+    width: 280px !important;
+    z-index: 999;
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .global-sidebar.mobile-open {
+    left: 0;
+  }
+
+  .sidebar-mobile-fab {
+    display: flex;
+  }
+
+  .sidebar-overlay-backdrop.active {
+    display: block;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.toast-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.toast-notification.toast-success {
+  background-color: #10b981; /* Verde esmeralda */
+  border-left: 5px solid #059669;
+}
+
+.toast-notification.toast-error {
+  background-color: #ef4444; /* Rojo */
+  border-left: 5px solid #dc2626;
+}

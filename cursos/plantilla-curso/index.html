@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aula Virtual - Curso</title>
+  
+  <!-- Rutas relativas estándar subiendo 2 niveles hasta la raíz -->
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="css/course.css">
+</head>
+<body>
+
+  <!-- Preload Screen Global -->
+  <div id="app-preload" class="preload-screen">
+    <div class="preload-content">
+      <div class="spinner"></div>
+      <p class="preload-text">Cargando curso...</p>
+    </div>
+  </div>
+
+  <!-- Header Responsive Global -->
+  <header class="navbar">
+    <div class="logo">
+      <a href="../../dashboard.html" class="brand-title">Plataforma Educativa</a>
+    </div>
+
+    <div class="user-profile">
+      <div class="user-menu-container">
+        <button id="user-menu-btn" class="user-menu-btn" type="button">
+          <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
+          <span id="nav-user-name" class="user-name-text">Cargando...</span>
+          <span class="menu-arrow">▼</span>
+        </button>
+
+        <div id="user-dropdown-menu" class="dropdown-menu" hidden>
+          <a href="../../dashboard.html" class="dropdown-item"><span>🏠</span> Mis Cursos</a>
+          
+          <div id="teacher-menu-option" hidden>
+            <a href="../../teacher.html" class="dropdown-item"><span>👨‍🏫</span> Panel Profesor</a>
+          </div>
+
+          <a href="../../profile.html" class="dropdown-item"><span>⚙️</span> Editar Perfil</a>
+          
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
+            🌙 <span>Modo Oscuro</span>
+          </button>
+
+          <div id="admin-menu-option" hidden>
+            <a href="../../admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
+            <span>🚪</span> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR DE LA APLICACIÓN (SIDEBAR + CONTENIDO) -->
+  <div class="app-layout">
+    <!-- El sidebar se construye automáticamente mediante js/sidebar.js -->
+    <aside id="global-sidebar" class="global-sidebar"></aside>
+
+    <!-- CONTENIDO PRINCIPAL DEL CURSO -->
+    <main class="main-wrapper">
+      <div class="course-page-header" style="margin-bottom: 20px;">
+        <h2>🐍 Nombre del Curso</h2>
+        <p style="color: var(--text-secondary); margin: 4px 0 0 0;">Módulo 1: Lecciones y Evaluaciones</p>
+      </div>
+
+      <div class="coursera-content" style="display: flex; flex-direction: column; gap: 25px;">
+        
+        <!-- SECCIÓN 1: VIDEO YOUTUBE EMBED -->
+        <section id="seccion-video" class="admin-card" style="border-left: 4px solid #2563eb;">
+          <h3>🎥 Clase 1: Video Explicativo</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Visualiza la clase en video sobre el tema del módulo.
+          </p>
+
+          <div class="content-frame-container" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; border: 1px solid var(--border-color); background: #000;">
+            <!-- REEMPLAZA ESTA URL CON TU ENLACE DE YOUTUBE EMBED -->
+            <iframe 
+              src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+              title="Clase 1" 
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </section>
+
+        <!-- SECCIÓN 2: PRESENTACIÓN GOOGLE DRIVE EMBED -->
+        <section id="seccion-drive" class="admin-card" style="border-left: 4px solid #10b981;">
+          <h3>📊 Diapositivas de la Lección (Google Drive)</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Consulta la presentación cargada en Google Drive.
+          </p>
+
+          <div class="content-frame-container" style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; border: 1px solid var(--border-color); background: #000;">
+            <!-- REEMPLAZA ESTA URL CON TU ENLACE INCRUSTADO DE GOOGLE DRIVE / SLIDES -->
+            <iframe 
+              src="https://docs.google.com/presentation/d/e/2PACX-1vQ/embed?start=false&loop=false&delayms=3000" 
+              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+              allowfullscreen="true">
+            </iframe>
+          </div>
+        </section>
+
+        <!-- SECCIÓN 3: FORMULARIO GOOGLE FORMS EMBED -->
+        <section id="seccion-forms" class="admin-card" style="border-left: 4px solid #f59e0b;">
+          <h3>📝 Cuestionario de Evaluación (Google Forms)</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+            Responde la evaluación interactiva para registrar tu aprendizaje.
+          </p>
+
+          <div class="form-frame-container" style="width: 100%; min-height: 650px; border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; background: var(--card-bg);">
+            <!-- REEMPLAZA ESTA URL CON TU ENLACE DE GOOGLE FORM (TERMINACIÓN /viewform?embedded=true) -->
+            <iframe 
+              src="https://docs.google.com/forms/d/e/1FAIpQLSc/viewform?embedded=true"
+              style="width: 100%; height: 650px; border: 0;">
+              Cargando cuestionario...
+            </iframe>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Inicializar controladores globales (Navbar y Sidebar dinámico) -->
+  <script type="module">
+    import { initNavbar } from '../../js/navbar.js';
+    import { initSidebar } from '../../js/sidebar.js';
+
+    initNavbar();
+    initSidebar();
+  </script>
+</body>
+</html>

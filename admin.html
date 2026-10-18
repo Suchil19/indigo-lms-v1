@@ -3,33 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Cursos</title>
+  <title>Panel de Administración - Plataforma Educativa</title>
+
+  <!-- Hoja de estilos global -->
   <link rel="stylesheet" href="css/style.css">
-  
-  <!-- SDK de EmailJS -->
+
+  <!-- Estilos para la Notificación Flotante (Toast) -->
+ 
+
+  <!-- CDN Oficial de EmailJS para Notificaciones Automáticas -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <!-- Librería SheetJS para lectura de archivos Excel -->
+
+  <!-- CDN de SheetJS (xlsx) para Carga Masiva por Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
-  <!-- Preload Screen -->
+  <!-- Preload Screen Global -->
   <div id="app-preload" class="preload-screen">
     <div class="preload-content">
       <div class="spinner"></div>
-      <p class="preload-text">Cargando panel de administración...</p>
+      <p class="preload-text">Cargando Panel de Administración...</p>
     </div>
   </div>
 
-  <!-- Header Responsive con Menú Desplegable -->
-  <header class="navbar admin-navbar">
+  <!-- Header Global -->
+  <header class="navbar">
     <div class="logo">
-      <a href="admin.html" class="brand-title">Panel Admin</a>
+      <a href="dashboard.html" class="brand-title">🛡️ Panel de Admin</a>
     </div>
 
     <div class="user-profile">
-      <button type="button" id="btn-open-preview-modal" class="btn-preview">👁️ Ver como Estudiante</button>
-
       <div class="user-menu-container">
         <button id="user-menu-btn" class="user-menu-btn" type="button">
           <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
@@ -39,259 +43,226 @@
 
         <div id="user-dropdown-menu" class="dropdown-menu" hidden>
           <a href="dashboard.html" class="dropdown-item"><span>🏠</span> Mis Cursos</a>
-          <a href="teacher.html" class="dropdown-item"><span>👨‍🏫</span> Panel Profesor</a>
+          <div id="teacher-menu-option" hidden><a href="teacher.html" class="dropdown-item"><span>👨‍🏫</span> Panel Profesor</a></div>
           <a href="profile.html" class="dropdown-item"><span>⚙️</span> Editar Perfil</a>
-          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
-            🌙 <span>Modo Oscuro</span>
-          </button>
-          <div id="admin-menu-option">
-            <a href="admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a>
-          </div>
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">🌙 <span>Modo Oscuro</span></button>
+          <div id="admin-menu-option" hidden><a href="admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a></div>
           <div class="dropdown-divider"></div>
-          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
-            <span>🚪</span> Cerrar Sesión
-          </button>
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger"><span>🚪</span> Cerrar Sesión</button>
         </div>
       </div>
     </div>
   </header>
 
-  <main class="container">
-    <h2>Gestión de Instituciones, Usuarios y Accesos</h2>
-
-    <!-- MÓDULO 1: REGISTRO, EDICIÓN Y GESTIÓN DE INSTITUCIONES -->
-    <section class="admin-card" style="border-left: 4px solid #2563eb;">
-      <h3 id="school-form-title">🏫 Registrar / Editar Institución</h3>
-      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
-        Asigna un dominio (ej. <code>@ipn.mx</code>) a cada escuela. Al cargar un archivo Excel, los alumnos se asociarán automáticamente a su institución según la terminación de su correo.
-      </p>
-
-      <!-- Formulario para agregar / editar escuela -->
-      <form id="form-create-school" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
-        <input type="hidden" id="editing-school-id" value="">
-
-        <div style="flex: 2; min-width: 200px;">
-          <input 
-            type="text" 
-            id="new-school-name" 
-            placeholder="Nombre (ej. ESCA Santo Tomás)" 
-            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; box-sizing: border-box;"
-            required
-          >
-        </div>
-
-        <div style="flex: 1.5; min-width: 160px;">
-          <input 
-            type="text" 
-            id="new-school-domain" 
-            placeholder="Dominio (ej. @ipn.mx)" 
-            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; box-sizing: border-box;"
-          >
-        </div>
-
-        <div style="flex: 2; min-width: 200px;">
-          <input 
-            type="url" 
-            id="new-school-logo" 
-            placeholder="URL del Logo (Opcional)" 
-            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; box-sizing: border-box;"
-          >
-        </div>
-
-        <button type="submit" id="btn-save-school" class="btn-primary" style="padding: 10px 20px; font-weight: bold; cursor: pointer;">
-          ➕ Guardar Institución
-        </button>
-
-        <button type="button" id="btn-cancel-edit-school" class="btn-secondary" style="padding: 10px 15px; font-weight: bold; cursor: pointer; display: none;">
-          ✕ Cancelar
-        </button>
-      </form>
-
-      <div id="school-status-msg" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; font-weight: bold; display: none;"></div>
-
-      <!-- Tarjetas interactivas de instituciones creadas -->
-      <div id="schools-grid-container" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
-        <p style="color: var(--text-secondary);">Cargando instituciones...</p>
-      </div>
-    </section>
-
-    <!-- MÓDULO 2: CARGA MASIVA DESDE EXCEL CON AUTO-ASIGNACIÓN POR DOMINIO -->
-    <section class="admin-card" style="border-left: 4px solid #10b981;">
-      <h3>📊 Carga Masiva de Alumnos desde Excel</h3>
-      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
-        Sube un archivo <code>.xlsx</code> o <code>.csv</code> con las columnas <strong>email</strong> y <strong>courses</strong> (separados por coma, ej. <code>python-intro,excel-1</code>). La institución se asignará automáticamente si el correo coincide con el dominio registrado de alguna escuela.
-      </p>
-
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
-        <button type="button" id="btn-import-excel" class="btn-primary" disabled>Procesar e Importar Alumnos</button>
+  <!-- LAYOUT PRINCIPAL SIN SIDEBAR -->
+  <div class="app-layout no-sidebar">
+    <main class="main-wrapper" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px;">
+      <div style="margin-bottom: 20px;">
+        <h2>Gestión Global de Usuarios y Accesos</h2>
+        <p style="color: var(--text-secondary);">Administra roles, instituciones, carga masiva por Excel y catálogo de cursos.</p>
       </div>
 
-      <div id="excel-preview-container" style="margin-top: 15px;" hidden>
-        <h4>Previsualización de datos a cargar (<span id="excel-rows-count">0</span> registros):</h4>
-        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
-          <table class="users-table" style="font-size: 0.85rem;">
+      <!-- SECCIÓN DE GESTIÓN DE INSTITUCIONES / ESCUELA -->
+      <section class="admin-card" style="margin-bottom: 25px; border-left: 4px solid #8b5cf6;">
+        <h3 id="school-form-title">🏫 Registrar / Editar Institución (Escuela)</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+          Define un nombre, el dominio de correo de la institución (ej. <code>@ipn.mx</code>) y una URL para su logotipo.
+        </p>
+
+        <form id="admin-school-form">
+          <input type="hidden" id="school-doc-id" value="">
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label for="school-name-input" style="font-weight: 600; font-size: 0.85rem;">Nombre de la Institución:</label>
+              <input type="text" id="school-name-input" class="form-control" placeholder="Ej. IPN ESCA Santo Tomás" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
+            </div>
+
+            <div>
+              <label for="school-domain-input" style="font-weight: 600; font-size: 0.85rem;">Dominio Institucional:</label>
+              <input type="text" id="school-domain-input" class="form-control" placeholder="Ej. @ipn.mx" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
+            </div>
+
+            <div>
+              <label for="school-logo-input" style="font-weight: 600; font-size: 0.85rem;">URL del Logo / Imagen:</label>
+              <input type="url" id="school-logo-input" class="form-control" placeholder="https://ejemplo.com/logo.png" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" id="btn-save-school" class="btn btn-primary">
+              💾 Guardar Institución
+            </button>
+            <button type="button" id="btn-cancel-school-edit" class="btn btn-outline" style="display: none;">
+              ❌ Cancelar Edición
+            </button>
+          </div>
+        </form>
+
+        <!-- TABLA DE INSTITUCIONES REGISTRADAS -->
+        <div style="margin-top: 20px; overflow-x: auto;">
+          <h4 style="margin-bottom: 10px; font-size: 0.95rem;">Instituciones Registradas</h4>
+          <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
             <thead>
-              <tr>
-                <th>Correo</th>
-                <th>Escuela Detectada por Dominio</th>
-                <th>Cursos a Asignar</th>
+              <tr style="text-align: left; background: var(--input-bg);">
+                <th style="padding: 8px;">Institución</th>
+                <th style="padding: 8px;">Dominio</th>
+                <th style="padding: 8px;">Logo</th>
+                <th style="padding: 8px;">Acciones</th>
               </tr>
             </thead>
-            <tbody id="excel-preview-body"></tbody>
+            <tbody id="admin-schools-tbody">
+              <tr><td colspan="4" class="text-center" style="padding: 15px;">Cargando instituciones...</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
-      <div id="excel-status-msg" style="margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none;"></div>
-    </section>
+      </section>
 
-    <!-- MÓDULO 3: ASIGNACIÓN MANUAL INDIVIDUAL -->
-    <section class="admin-card">
-      <h3 id="form-title">Agregar / Modificar Usuario Individual</h3>
-      <form id="form-assign-role" class="form-role">
+      <!-- SECCIÓN DE CARGA MASIVA DESDE EXCEL CON VISTA PREVIA -->
+      <section class="admin-card" style="margin-bottom: 25px; border-left: 4px solid #10b981;">
+        <h3>📊 Importación Masiva desde Excel</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+          Sube un archivo <code>.xlsx</code> o <code>.csv</code>. Se generará una vista previa con el estatus de escuela detectado por dominio antes de realizar cualquier cambio en la base de datos.
+        </p>
         
-        <div class="form-group">
-          <label for="user-email">Correo Electrónico del Usuario:</label>
-          <div class="search-box">
-            <input type="email" id="user-email" list="users-datalist" placeholder="correo.usuario@ejemplo.com" autocomplete="off" required>
-            <datalist id="users-datalist"></datalist>
-          </div>
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+          <input type="file" id="admin-excel-file-input" accept=".xlsx, .xls, .csv" class="form-control" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Selecciona las casillas de cursos abajo si deseas asignar cursos en lote durante esta importación.</span>
         </div>
 
-        <div class="form-group">
-          <label for="user-school-select">Institución / Escuela:</label>
-          <select id="user-school-select" required style="padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
-            <option value="">Cargando escuelas...</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="user-role">Rol Asignado:</label>
-          <select id="user-role">
-            <option value="student">Estudiante</option>
-            <option value="teacher">Profesor</option>
-            <option value="admin">Administrador</option>
-          </select>
-        </div>
-
-        <div class="form-group full-width">
-          <label>Cursos Permitidos:</label>
-          <div class="courses-checkbox-grid">
-            <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="python-intro">
-              <span>Introducción a la Programación con Python</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="diseno-ux">
-              <span>Diseño UX</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="diseno-web-intro">
-              <span>Introducción al Diseño Web</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="excel-1">
-              <span>Excel 1</span>
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" name="courses" value="excel-dos">
-              <span>Excel 2</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">Guardar Accesos y Notificar</button>
-          <button type="button" id="btn-reset-form" class="btn-secondary">Limpiar Formulario</button>
-        </div>
-      </form>
-      <div id="role-status-msg" style="margin-top: 15px; padding: 12px; border-radius: 8px; font-weight: bold; display: none;"></div>
-    </section>
-
-    <!-- MÓDULO 4: TABLA DE USUARIOS CON ACCIONES EN LOTE Y SELECCIÓN MÚLTIPLE -->
-    <section class="admin-card">
-      <div class="table-header-tools" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <h3 style="margin: 0;">Lista de Usuarios Registrados</h3>
-          
-          <!-- BARRA DE ACCIONES EN LOTE -->
-          <div id="batch-actions-container" style="display: none; align-items: center; gap: 8px; background: var(--input-bg); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.85rem; font-weight: bold;">Acción en lote (<span id="selected-count">0</span>):</span>
+        <!-- CONTENEDOR DE VISTA PREVIA DE EXCEL -->
+        <div id="excel-preview-container" style="display: none; margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+            <h4 style="margin: 0; color: #10b981;">🔍 Vista Previa del Archivo Excel (<span id="excel-preview-count">0</span> registros)</h4>
             
-            <select id="batch-action-select" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
-              <option value="move">🏫 Mover a Institución...</option>
-              <option value="role-student">👨‍🎓 Cambiar a Rol Estudiante</option>
-              <option value="role-teacher">👨‍🏫 Cambiar a Rol Profesor</option>
-              <option value="role-admin">🛡️ Cambiar a Rol Admin</option>
+            <div style="display: flex; gap: 10px;">
+              <button type="button" id="btn-cancel-excel-preview" class="btn btn-sm btn-outline">
+                ❌ Cancelar / Limpiar
+              </button>
+              <button type="button" id="btn-confirm-excel-import" class="btn btn-sm btn-primary">
+                ✅ Confirmar y Guardar en Firestore
+              </button>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+              <thead>
+                <tr style="text-align: left; background: var(--input-bg); position: sticky; top: 0;">
+                  <th style="padding: 8px;">Correo</th>
+                  <th style="padding: 8px;">Rol</th>
+                  <th style="padding: 8px;">Escuela Asignada / Detectada</th>
+                  <th style="padding: 8px;">Cursos a Asignar</th>
+                  <th style="padding: 8px; text-align: center;">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="excel-preview-tbody">
+                <!-- Se puebla dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORMULARIO DE EDICIÓN / ASIGNACIÓN INDIVIDUAL CON AUTOCOMPLETADO -->
+      <section class="admin-card" style="margin-bottom: 25px;">
+        <h3>👤 Asignar / Modificar Usuario Individual</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
+          Ingresa o selecciona el correo para otorgarle rol, institución y cursos permitidos.
+        </p>
+
+        <form id="admin-single-user-form">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label for="admin-user-email-input" style="font-weight: 600; font-size: 0.85rem;">Correo del Usuario:</label>
+              <input type="email" id="admin-user-email-input" list="registered-emails-list" class="form-control" placeholder="Empieza a escribir el correo..." required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;" autocomplete="off">
+              <datalist id="registered-emails-list"></datalist>
+            </div>
+
+            <div>
+              <label for="admin-user-role-select" style="font-weight: 600; font-size: 0.85rem;">Rol Asignado:</label>
+              <select id="admin-user-role-select" class="form-control" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
+                <option value="student">Estudiante (student)</option>
+                <option value="teacher">Profesor (teacher)</option>
+                <option value="admin">Administrador (admin)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="admin-user-school-select" style="font-weight: 600; font-size: 0.85rem;">Institución / Escuela:</label>
+              <select id="admin-user-school-select" class="form-control" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
+                <option value="General">General / Sin Institución</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- CONTENEDOR DINÁMICO DE CHECKBOXES DE CURSOS -->
+          <div style="margin-bottom: 15px;">
+            <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 6px;">Cursos Habilitados en Catálogo (Aplica también para Excel):</label>
+            <div id="admin-courses-checkboxes-container" style="background: var(--input-bg, #f9fafb); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
+              <span style="font-size: 0.85rem; color: var(--text-secondary);">Cargando catálogo de cursos...</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            💾 Guardar Accesos y Notificar
+          </button>
+        </form>
+      </section>
+
+      <!-- BARRA DE ACCIONES EN LOTE Y TABLA DE USUARIOS TIEMPO REAL -->
+      <section class="admin-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+          <h3>📋 Listado de Usuarios Registrados (Tiempo Real)</h3>
+
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select id="admin-batch-action-select" class="form-control" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <option value="make_student">👨‍🎓 Cambiar a Rol Estudiante</option>
+              <option value="make_teacher">👨‍🏫 Cambiar a Rol Profesor</option>
+              <option value="change_school">🏫 Cambiar Institución</option>
               <option value="delete">🗑️ Eliminar Seleccionados</option>
             </select>
 
-            <select id="batch-target-school" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
-              <option value="">-- Selecciona destino --</option>
+            <select id="batch-school-select" class="form-control" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+              <option value="General">General / Sin Institución</option>
             </select>
 
-            <button type="button" id="btn-apply-batch-action" class="btn-primary btn-sm" style="padding: 6px 12px; font-weight: bold; cursor: pointer;">
-              Aplicar
+            <button type="button" id="btn-apply-batch-action" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px;">
+              Aplicar Acción en Lote
             </button>
           </div>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <label for="filter-school" style="font-size: 0.9rem; font-weight: 600;">Filtrar Escuela:</label>
-          <select id="filter-school" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
-            <option value="ALL">Todas las escuelas</option>
-          </select>
+        <div style="overflow-x: auto;">
+          <table class="table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="text-align: left; border-bottom: 2px solid var(--border-color);">
+                <th style="padding: 10px;"><input type="checkbox" id="admin-select-all-users"></th>
+                <th style="padding: 10px;">Correo</th>
+                <th style="padding: 10px;">Rol</th>
+                <th style="padding: 10px;">Escuela</th>
+                <th style="padding: 10px;">Cursos Habilitados</th>
+                <th style="padding: 10px;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="admin-users-tbody">
+              <tr><td colspan="6" class="text-center" style="padding: 20px;">Sincronizando correos en tiempo real...</td></tr>
+            </tbody>
+          </table>
         </div>
-      </div>
-
-      <div class="table-responsive">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th style="width: 40px; text-align: center;">
-                <input type="checkbox" id="select-all-students" title="Seleccionar todos">
-              </th>
-              <th>Correo Electrónico</th>
-              <th>Escuela / Institución</th>
-              <th>Rol</th>
-              <th>Cursos Asignados</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="users-table-body">
-            <tr>
-              <td colspan="6" class="text-center">Cargando lista de usuarios...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <!-- MODAL DE SELECCIÓN DE VISTA PREVIA -->
-  <div id="preview-student-modal" class="modal" hidden>
-    <div class="modal-content">
-      <button type="button" id="btn-close-preview-modal" class="close-btn">&times;</button>
-      <h3>Seleccionar Estudiante para Vista Previa</h3>
-      <p class="help-text">Selecciona un alumno o filtra por escuela para simular su panel:</p>
-      
-      <div style="display: flex; gap: 10px; margin: 15px 0;">
-        <input type="search" id="search-preview-input" placeholder="🔍 Filtrar por correo..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
-        <select id="modal-filter-school" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
-          <option value="ALL">Todas las escuelas</option>
-        </select>
-      </div>
-
-      <div class="preview-generic-box">
-        <button type="button" id="btn-preview-generic" class="btn-secondary full-width">
-          👁️ Vista Previa Genérica (Tus Permisos)
-        </button>
-      </div>
-
-      <div id="preview-students-list" class="preview-students-list"></div>
-    </div>
+      </section>
+    </main>
   </div>
 
-  <script type="module" src="js/admin.js"></script>
+  <!-- Contenedor para Notificaciones Flotantes (Toasts) -->
+  <div id="admin-toast" class="toast-notification"></div>
+
+  <script type="module">
+    import { initNavbar } from './js/navbar.js';
+    import { initAdminPanel } from './js/admin.js';
+
+    initNavbar();
+    initAdminPanel();
+  </script>
 </body>
 </html>

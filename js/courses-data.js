@@ -1,38 +1,35 @@
+// Catálogo centralizado de cursos de la plataforma
 export const COURSES_CATALOG = {
-    "python-intro": {
-      id: "python-intro",
-      title: "Introducción a la Programación con Python",
-      description: "Aprende las bases de la programación, estructuras de datos y lógica algorítmica utilizando Python desde cero.",
-      tag: "Programación",
-      folderPath: "cursos/python-fundamentals/index.html"
-    },
-    "diseno-ux": {
-      id: "diseno-ux",
-      title: "Diseño UX",
-      description: "Principios de experiencia de usuario, investigación de usuarios, arquitectura de información y prototipado.",
-      tag: "Diseño",
-      folderPath: "cursos/ux-desing/index.html"
-    },
-    "diseno-web-intro": {
-      id: "diseno-web-intro",
-      title: "Introducción al Diseño Web",
-      description: "Aprende los fundamentos de HTML5, CSS3 y diseño responsivo para construir sitios web atractivos y funcionales.",
-      tag: "Web",
-      folderPath: "cursos/web-fundamentals/index.html"
-    },
-    "excel-1": {
-      id: "excel-1",
-      title: "Excel 1",
-      description: "Domina el manejo esencial de hojas de cálculo, fórmulas básicas, formatos, filtros y gestión de datos.",
-      tag: "Productividad",
-      folderPath: "cursos/excel-uno/index.html"
-    },
-
-    "excel-dos": {
-        id: "excel-dos",
-        title: "Excel 2",
-        description: "Domina el manejo esencial de hojas de cálculo, fórmulas básicas, formatos, filtros y gestión de datos.",
-        tag: "Productividad",
-        folderPath: "cursos/excel-dos/index.html"
-      }
-  };
+  'python-fundamentals': {
+    id: 'python-fundamentals',
+    title: '🐍 Python Fundamentals',
+    module: 'Módulo 1: Fundamentos de la Programación',
+    folderPath: 'cursos/python-fundamentals',
+    icon: '🐍',
+    description: 'Aprende los conceptos básicos de Python, sintaxis, estructuras de control y funciones.'
+  },
+  'excel-dos': {
+    id: 'excel-dos',
+    title: '📊 Excel Avanzado y Dashboard',
+    module: 'Módulo 1: Automatización y Análisis',
+    folderPath: 'cursos/excel-avanzado',
+    icon: '📊',
+    description: 'Domina tablas dinámicas, fórmulas complejas y construcción de tableros interactivos.'
+  },
+  'web-fundamentals': {
+    id: 'web-fundamentals',
+    title: '🎨 Introducción al Diseño Web',
+    module: 'Módulo 1: HTML5, CSS3 y Flexbox',
+    folderPath: 'cursos/web-fundamentals',
+    icon: '🎨',
+    description: 'Crea sitios web modernos, adaptables y profesionales desde cero.'
+  },
+  'excel-uno': {
+    id: 'excel-uno',
+    title: 'Excel Uno',
+    module: 'Módulo 1: HTML5, CSS3 y Flexbox',
+    folderPath: 'cursos/excel-uno',
+    icon: '🎨',
+    description: 'Crea sitios web modernos, adaptables y profesionales desde cero.'
+  }
+};
