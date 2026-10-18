@@ -8,8 +8,7 @@
   <!-- Hoja de estilos global -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Estilos para la Notificación Flotante (Toast) -->
- 
+
 
   <!-- CDN Oficial de EmailJS para Notificaciones Automáticas -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -58,11 +57,11 @@
   <div class="app-layout no-sidebar">
     <main class="main-wrapper" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px;">
       <div style="margin-bottom: 20px;">
-        <h2>Gestión Global de Usuarios y Accesos</h2>
-        <p style="color: var(--text-secondary);">Administra roles, instituciones, carga masiva por Excel y catálogo de cursos.</p>
+        <h2>Gestión Global de Usuarios, Grupos e Instituciones</h2>
+        <p style="color: var(--text-secondary);">Administra roles, grupos por escuela, carga masiva por Excel y catálogo de cursos.</p>
       </div>
 
-      <!-- SECCIÓN DE GESTIÓN DE INSTITUCIONES / ESCUELA -->
+      <!-- SECCIÓN DE GESTIÓN DE INSTITUCIONES Y SUS GRUPOS -->
       <section class="admin-card" style="margin-bottom: 25px; border-left: 4px solid #8b5cf6;">
         <h3 id="school-form-title">🏫 Registrar / Editar Institución (Escuela)</h3>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
@@ -99,13 +98,79 @@
           </div>
         </form>
 
+        <!-- SUBSECCIÓN: CREACIÓN DE GRUPOS Y ALUMNOS DESDE EXCEL -->
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+          <h4>👥 Crear Grupos y Registrar Alumnos por Excel</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Sube un Excel con columnas <code>grupo</code> y <code>correo</code> (o <code>email</code>). Se crearán los grupos en la escuela y se registrarán los alumnos automáticamente.
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; align-items: start; margin-bottom: 15px;">
+            <!-- Alta Manual de Grupo -->
+            <form id="admin-group-form" style="background: var(--input-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <strong style="display: block; margin-bottom: 8px; font-size: 0.85rem;">➕ Alta Manual de Grupo</strong>
+              
+              <div style="margin-bottom: 10px;">
+                <label for="group-school-select" style="font-weight: 600; font-size: 0.8rem;">Escuela Destino:</label>
+                <select id="group-school-select" class="form-control" required style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 2px;">
+                  <option value="">Cargando escuelas...</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom: 10px;">
+                <label for="group-name-input" style="font-weight: 600; font-size: 0.8rem;">Nombre del Grupo:</label>
+                <input type="text" id="group-name-input" class="form-control" placeholder="Ej. 1AV1, 3CV11" required style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 2px;">
+              </div>
+
+              <button type="submit" class="btn btn-sm btn-primary" style="width: 100%;">
+                Guardar Grupo
+              </button>
+            </form>
+
+            <!-- Carga Masiva de Grupos y Alumnos desde Excel -->
+            <div style="background: var(--input-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+              <strong style="display: block; margin-bottom: 8px; font-size: 0.85rem;">📂 Carga Masiva (Grupos + Alumnos)</strong>
+              
+              <div style="margin-bottom: 10px;">
+                <label for="excel-groups-school-select" style="font-weight: 600; font-size: 0.8rem;">Selecciona la Escuela:</label>
+                <select id="excel-groups-school-select" class="form-control" style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 2px;">
+                  <option value="">-- Selecciona una Escuela --</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="admin-excel-groups-file-input" style="font-weight: 600; font-size: 0.8rem;">Archivo Excel (.xlsx/.csv):</label>
+                <input type="file" id="admin-excel-groups-file-input" accept=".xlsx, .xls, .csv" class="form-control" style="width: 100%; padding: 4px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 2px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- VISTA PREVIA DE CARGA MASIVA DE GRUPOS Y ALUMNOS -->
+          <div id="groups-preview-container" style="display: none; background: var(--card-bg, #fff); border: 1px solid #8b5cf6; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <strong style="color: #8b5cf6; font-size: 0.85rem;">🔍 Vista Previa (<span id="groups-preview-count">0</span> grupos, <span id="students-preview-count">0</span> alumnos)</strong>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" id="btn-cancel-groups-preview" class="btn btn-sm btn-outline">Cancelar</button>
+                <button type="button" id="btn-confirm-groups-import" class="btn btn-sm btn-primary">✅ Confirmar e Importar Todo</button>
+              </div>
+            </div>
+            <div id="groups-preview-chips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;"></div>
+            <div id="students-preview-summary" style="font-size: 0.8rem; color: var(--text-secondary);"></div>
+          </div>
+
+          <!-- LISTADO VISUAL DE GRUPOS EXISTENTES Y ALUMNOS ANIDADOS -->
+          <div id="school-groups-list-container" style="font-size: 0.85rem;">
+            <!-- Se puebla dinámicamente -->
+          </div>
+        </div>
+
         <!-- TABLA DE INSTITUCIONES REGISTRADAS -->
         <div style="margin-top: 20px; overflow-x: auto;">
-          <h4 style="margin-bottom: 10px; font-size: 0.95rem;">Instituciones Registradas</h4>
+          <h4 style="margin-bottom: 10px; font-size: 0.95rem;">Instituciones Registradas y Alumnos</h4>
           <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
             <thead>
               <tr style="text-align: left; background: var(--input-bg);">
-                <th style="padding: 8px;">Institución</th>
+                <th style="padding: 8px;">Institución / Grupo</th>
                 <th style="padding: 8px;">Dominio</th>
                 <th style="padding: 8px;">Logo</th>
                 <th style="padding: 8px;">Acciones</th>
@@ -118,61 +183,15 @@
         </div>
       </section>
 
-      <!-- SECCIÓN DE CARGA MASIVA DESDE EXCEL CON VISTA PREVIA -->
-      <section class="admin-card" style="margin-bottom: 25px; border-left: 4px solid #10b981;">
-        <h3>📊 Importación Masiva desde Excel</h3>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
-          Sube un archivo <code>.xlsx</code> o <code>.csv</code>. Se generará una vista previa con el estatus de escuela detectado por dominio antes de realizar cualquier cambio en la base de datos.
-        </p>
-        
-        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-          <input type="file" id="admin-excel-file-input" accept=".xlsx, .xls, .csv" class="form-control" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg);">
-          <span style="font-size: 0.8rem; color: var(--text-secondary);">Selecciona las casillas de cursos abajo si deseas asignar cursos en lote durante esta importación.</span>
-        </div>
-
-        <!-- CONTENEDOR DE VISTA PREVIA DE EXCEL -->
-        <div id="excel-preview-container" style="display: none; margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
-            <h4 style="margin: 0; color: #10b981;">🔍 Vista Previa del Archivo Excel (<span id="excel-preview-count">0</span> registros)</h4>
-            
-            <div style="display: flex; gap: 10px;">
-              <button type="button" id="btn-cancel-excel-preview" class="btn btn-sm btn-outline">
-                ❌ Cancelar / Limpiar
-              </button>
-              <button type="button" id="btn-confirm-excel-import" class="btn btn-sm btn-primary">
-                ✅ Confirmar y Guardar en Firestore
-              </button>
-            </div>
-          </div>
-
-          <div style="overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px;">
-            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
-              <thead>
-                <tr style="text-align: left; background: var(--input-bg); position: sticky; top: 0;">
-                  <th style="padding: 8px;">Correo</th>
-                  <th style="padding: 8px;">Rol</th>
-                  <th style="padding: 8px;">Escuela Asignada / Detectada</th>
-                  <th style="padding: 8px;">Cursos a Asignar</th>
-                  <th style="padding: 8px; text-align: center;">Acción</th>
-                </tr>
-              </thead>
-              <tbody id="excel-preview-tbody">
-                <!-- Se puebla dinámicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- FORMULARIO DE EDICIÓN / ASIGNACIÓN INDIVIDUAL CON AUTOCOMPLETADO -->
+      <!-- FORMULARIO DE EDICIÓN / ASIGNACIÓN INDIVIDUAL -->
       <section class="admin-card" style="margin-bottom: 25px;">
         <h3>👤 Asignar / Modificar Usuario Individual</h3>
         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 15px;">
-          Ingresa o selecciona el correo para otorgarle rol, institución y cursos permitidos.
+          Ingresa o selecciona el correo para otorgarle rol, institución, grupo y cursos permitidos.
         </p>
 
         <form id="admin-single-user-form">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
             <div>
               <label for="admin-user-email-input" style="font-weight: 600; font-size: 0.85rem;">Correo del Usuario:</label>
               <input type="email" id="admin-user-email-input" list="registered-emails-list" class="form-control" placeholder="Empieza a escribir el correo..." required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;" autocomplete="off">
@@ -194,11 +213,18 @@
                 <option value="General">General / Sin Institución</option>
               </select>
             </div>
+
+            <div>
+              <label for="admin-user-group-select" style="font-weight: 600; font-size: 0.85rem;">Grupo Asignado:</label>
+              <select id="admin-user-group-select" class="form-control" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-top: 4px;">
+                <option value="Sin Grupo">Sin Grupo Asignado</option>
+              </select>
+            </div>
           </div>
 
           <!-- CONTENEDOR DINÁMICO DE CHECKBOXES DE CURSOS -->
           <div style="margin-bottom: 15px;">
-            <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 6px;">Cursos Habilitados en Catálogo (Aplica también para Excel):</label>
+            <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 6px;">Cursos Habilitados en Catálogo:</label>
             <div id="admin-courses-checkboxes-container" style="background: var(--input-bg, #f9fafb); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
               <span style="font-size: 0.85rem; color: var(--text-secondary);">Cargando catálogo de cursos...</span>
             </div>
@@ -210,37 +236,17 @@
         </form>
       </section>
 
-      <!-- BARRA DE ACCIONES EN LOTE Y TABLA DE USUARIOS TIEMPO REAL -->
+      <!-- TABLA DE USUARIOS GENERAL -->
       <section class="admin-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-          <h3>📋 Listado de Usuarios Registrados (Tiempo Real)</h3>
-
-          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <select id="admin-batch-action-select" class="form-control" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
-              <option value="make_student">👨‍🎓 Cambiar a Rol Estudiante</option>
-              <option value="make_teacher">👨‍🏫 Cambiar a Rol Profesor</option>
-              <option value="change_school">🏫 Cambiar Institución</option>
-              <option value="delete">🗑️ Eliminar Seleccionados</option>
-            </select>
-
-            <select id="batch-school-select" class="form-control" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
-              <option value="General">General / Sin Institución</option>
-            </select>
-
-            <button type="button" id="btn-apply-batch-action" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px;">
-              Aplicar Acción en Lote
-            </button>
-          </div>
-        </div>
-
-        <div style="overflow-x: auto;">
+        <h3>📋 Listado General de Usuarios Registrados (Tiempo Real)</h3>
+        <div style="overflow-x: auto; margin-top: 15px;">
           <table class="table" style="width: 100%; border-collapse: collapse;">
             <thead>
               <tr style="text-align: left; border-bottom: 2px solid var(--border-color);">
-                <th style="padding: 10px;"><input type="checkbox" id="admin-select-all-users"></th>
                 <th style="padding: 10px;">Correo</th>
                 <th style="padding: 10px;">Rol</th>
                 <th style="padding: 10px;">Escuela</th>
+                <th style="padding: 10px;">Grupo</th>
                 <th style="padding: 10px;">Cursos Habilitados</th>
                 <th style="padding: 10px;">Acciones</th>
               </tr>
