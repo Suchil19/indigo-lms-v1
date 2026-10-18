@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Profesor - Gestión de Salones</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Preload Screen -->
+  <div id="app-preload" class="preload-screen">
+    <div class="preload-content">
+      <div class="spinner"></div>
+      <p class="preload-text">Cargando panel de profesor...</p>
+    </div>
+  </div>
+
+  <!-- Header Responsive -->
+  <header class="navbar">
+    <div class="logo">
+      <a href="teacher.html" class="brand-title">Panel Profesor</a>
+    </div>
+
+    <div class="user-profile">
+      <div class="user-menu-container">
+        <button id="user-menu-btn" class="user-menu-btn" type="button">
+          <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
+          <span id="nav-user-name" class="user-name-text">Cargando...</span>
+          <span class="menu-arrow">▼</span>
+        </button>
+
+        <div id="user-dropdown-menu" class="dropdown-menu" hidden>
+          <a href="dashboard.html" class="dropdown-item"><span>🏠</span> Mis Cursos</a>
+          
+          <div id="teacher-menu-option">
+            <a href="teacher.html" class="dropdown-item"><span>👨‍🏫</span> Panel Profesor</a>
+          </div>
+
+          <a href="profile.html" class="dropdown-item"><span>⚙️</span> Editar Perfil</a>
+          
+          <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
+            🌙 <span>Modo Oscuro</span>
+          </button>
+
+          <div id="admin-menu-option" hidden>
+            <a href="admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
+            <span>🚪</span> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="dashboard-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <h2 style="margin: 0;">Gestión de Salones y Grupos</h2>
+        <p style="margin: 5px 0 0 0; color: var(--text-secondary);">Organiza y asigna a tus alumnos a sus respectivos salones de clase.</p>
+      </div>
+
+      <div class="student-info-badge" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+        🏫 Escuela Asignada: <span id="teacher-school-badge" style="color: #2563eb;">Cargando...</span>
+      </div>
+    </div>
+
+    <!-- MÓDULO: ALUMNOS Y SALONES -->
+    <section class="admin-card" style="border-left: 4px solid #0284c7;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+        <h3 style="margin: 0;">Alumnos Enrolados en tu Institución</h3>
+
+        <!-- BARRA DE ASIGNACIÓN EN LOTE -->
+        <div id="teacher-batch-container" style="display: none; align-items: center; gap: 10px; background: var(--input-bg); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <span style="font-size: 0.85rem; font-weight: bold;">Asignar a (<span id="teacher-selected-count">0</span>):</span>
+
+          <input type="text" id="batch-classroom-input" placeholder="Ej. Salón 101, Grupo A..." style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
+
+          <button type="button" id="btn-apply-classroom-batch" class="btn-primary btn-sm" style="padding: 6px 12px; font-weight: bold; cursor: pointer;">
+            Mover a Salón
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <label for="filter-classroom" style="font-size: 0.9rem; font-weight: 600;">Filtrar Salón:</label>
+          <select id="filter-classroom" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
+            <option value="ALL">Todos los salones</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="teacher-status-msg" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; font-weight: bold; display: none;"></div>
+
+      <div class="table-responsive">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">
+                <input type="checkbox" id="select-all-classroom-students" title="Seleccionar todos">
+              </th>
+              <th>Correo del Alumno</th>
+              <th>Salón / Grupo Actual</th>
+              <th>Cursos Asignados</th>
+              <th>Cambiar Salón</th>
+            </tr>
+          </thead>
+          <tbody id="teacher-students-table-body">
+            <tr>
+              <td colspan="5" class="text-center">Cargando lista de estudiantes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/teacher.js"></script>
+</body>
+</html>

@@ -8,14 +8,18 @@
   
   <!-- SDK de EmailJS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-  <script type="text/javascript">
-    (function() {
-      // Reemplaza TU_PUBLIC_KEY_REAL con tu clave de EmailJS (Account -> API Keys)
-      emailjs.init("Sme5UkbtF9t2q26pn");
-    })();
-  </script>
+  <!-- Librería SheetJS para lectura de archivos Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+
+  <!-- Preload Screen -->
+  <div id="app-preload" class="preload-screen">
+    <div class="preload-content">
+      <div class="spinner"></div>
+      <p class="preload-text">Cargando panel de administración...</p>
+    </div>
+  </div>
 
   <!-- Header Responsive con Menú Desplegable -->
   <header class="navbar admin-navbar">
@@ -34,25 +38,16 @@
         </button>
 
         <div id="user-dropdown-menu" class="dropdown-menu" hidden>
-          <a href="dashboard.html" class="dropdown-item">
-            <span>🏠</span> Mis Cursos
-          </a>
-          <a href="profile.html" class="dropdown-item">
-            <span>⚙️</span> Editar Perfil
-          </a>
-          
+          <a href="dashboard.html" class="dropdown-item"><span>🏠</span> Mis Cursos</a>
+          <a href="teacher.html" class="dropdown-item"><span>👨‍🏫</span> Panel Profesor</a>
+          <a href="profile.html" class="dropdown-item"><span>⚙️</span> Editar Perfil</a>
           <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
             🌙 <span>Modo Oscuro</span>
           </button>
-
           <div id="admin-menu-option">
-            <a href="admin.html" class="dropdown-item">
-              <span>🛡️</span> Panel Admin
-            </a>
+            <a href="admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a>
           </div>
-
           <div class="dropdown-divider"></div>
-
           <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
             <span>🚪</span> Cerrar Sesión
           </button>
@@ -62,32 +57,119 @@
   </header>
 
   <main class="container">
-    <h2>Gestión de Usuarios y Accesos</h2>
-    
-    <!-- Formulario para agregar / editar alumno -->
+    <h2>Gestión de Instituciones, Usuarios y Accesos</h2>
+
+    <!-- MÓDULO 1: REGISTRO, EDICIÓN Y GESTIÓN DE INSTITUCIONES -->
+    <section class="admin-card" style="border-left: 4px solid #2563eb;">
+      <h3 id="school-form-title">🏫 Registrar / Editar Institución</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+        Asigna un dominio (ej. <code>@ipn.mx</code>) a cada escuela. Al cargar un archivo Excel, los alumnos se asociarán automáticamente a su institución según la terminación de su correo.
+      </p>
+
+      <!-- Formulario para agregar / editar escuela -->
+      <form id="form-create-school" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">
+        <input type="hidden" id="editing-school-id" value="">
+
+        <div style="flex: 2; min-width: 200px;">
+          <input 
+            type="text" 
+            id="new-school-name" 
+            placeholder="Nombre (ej. ESCA Santo Tomás)" 
+            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; box-sizing: border-box;"
+            required
+          >
+        </div>
+
+        <div style="flex: 1.5; min-width: 160px;">
+          <input 
+            type="text" 
+            id="new-school-domain" 
+            placeholder="Dominio (ej. @ipn.mx)" 
+            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; box-sizing: border-box;"
+          >
+        </div>
+
+        <div style="flex: 2; min-width: 200px;">
+          <input 
+            type="url" 
+            id="new-school-logo" 
+            placeholder="URL del Logo (Opcional)" 
+            style="width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; box-sizing: border-box;"
+          >
+        </div>
+
+        <button type="submit" id="btn-save-school" class="btn-primary" style="padding: 10px 20px; font-weight: bold; cursor: pointer;">
+          ➕ Guardar Institución
+        </button>
+
+        <button type="button" id="btn-cancel-edit-school" class="btn-secondary" style="padding: 10px 15px; font-weight: bold; cursor: pointer; display: none;">
+          ✕ Cancelar
+        </button>
+      </form>
+
+      <div id="school-status-msg" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; font-weight: bold; display: none;"></div>
+
+      <!-- Tarjetas interactivas de instituciones creadas -->
+      <div id="schools-grid-container" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px;">
+        <p style="color: var(--text-secondary);">Cargando instituciones...</p>
+      </div>
+    </section>
+
+    <!-- MÓDULO 2: CARGA MASIVA DESDE EXCEL CON AUTO-ASIGNACIÓN POR DOMINIO -->
+    <section class="admin-card" style="border-left: 4px solid #10b981;">
+      <h3>📊 Carga Masiva de Alumnos desde Excel</h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">
+        Sube un archivo <code>.xlsx</code> o <code>.csv</code> con las columnas <strong>email</strong> y <strong>courses</strong> (separados por coma, ej. <code>python-intro,excel-1</code>). La institución se asignará automáticamente si el correo coincide con el dominio registrado de alguna escuela.
+      </p>
+
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <input type="file" id="excel-file-input" accept=".xlsx, .xls, .csv" style="padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-color);">
+        <button type="button" id="btn-import-excel" class="btn-primary" disabled>Procesar e Importar Alumnos</button>
+      </div>
+
+      <div id="excel-preview-container" style="margin-top: 15px;" hidden>
+        <h4>Previsualización de datos a cargar (<span id="excel-rows-count">0</span> registros):</h4>
+        <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+          <table class="users-table" style="font-size: 0.85rem;">
+            <thead>
+              <tr>
+                <th>Correo</th>
+                <th>Escuela Detectada por Dominio</th>
+                <th>Cursos a Asignar</th>
+              </tr>
+            </thead>
+            <tbody id="excel-preview-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="excel-status-msg" style="margin-top: 10px; padding: 10px; border-radius: 6px; font-weight: bold; display: none;"></div>
+    </section>
+
+    <!-- MÓDULO 3: ASIGNACIÓN MANUAL INDIVIDUAL -->
     <section class="admin-card">
-      <h3 id="form-title">Agregar / Modificar Alumno</h3>
+      <h3 id="form-title">Agregar / Modificar Usuario Individual</h3>
       <form id="form-assign-role" class="form-role">
         
-        <div class="form-group full-width">
-          <label for="user-email">Correo Electrónico del Alumno:</label>
+        <div class="form-group">
+          <label for="user-email">Correo Electrónico del Usuario:</label>
           <div class="search-box">
-            <input 
-              type="email" 
-              id="user-email" 
-              list="users-datalist" 
-              placeholder="correo.alumno@ejemplo.com" 
-              autocomplete="off"
-              required
-            >
+            <input type="email" id="user-email" list="users-datalist" placeholder="correo.usuario@ejemplo.com" autocomplete="off" required>
             <datalist id="users-datalist"></datalist>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="user-role">Rol asignado:</label>
+          <label for="user-school-select">Institución / Escuela:</label>
+          <select id="user-school-select" required style="padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
+            <option value="">Cargando escuelas...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="user-role">Rol Asignado:</label>
           <select id="user-role">
             <option value="student">Estudiante</option>
+            <option value="teacher">Profesor</option>
             <option value="admin">Administrador</option>
           </select>
         </div>
@@ -99,22 +181,18 @@
               <input type="checkbox" name="courses" value="python-intro">
               <span>Introducción a la Programación con Python</span>
             </label>
-
             <label class="checkbox-label">
               <input type="checkbox" name="courses" value="diseno-ux">
               <span>Diseño UX</span>
             </label>
-
             <label class="checkbox-label">
               <input type="checkbox" name="courses" value="diseno-web-intro">
               <span>Introducción al Diseño Web</span>
             </label>
-
             <label class="checkbox-label">
               <input type="checkbox" name="courses" value="excel-1">
               <span>Excel 1</span>
             </label>
-
             <label class="checkbox-label">
               <input type="checkbox" name="courses" value="excel-dos">
               <span>Excel 2</span>
@@ -127,17 +205,54 @@
           <button type="button" id="btn-reset-form" class="btn-secondary">Limpiar Formulario</button>
         </div>
       </form>
-      <p id="role-status-msg" class="status-msg"></p>
+      <div id="role-status-msg" style="margin-top: 15px; padding: 12px; border-radius: 8px; font-weight: bold; display: none;"></div>
     </section>
 
-    <!-- Tabla de Alumnos -->
+    <!-- MÓDULO 4: TABLA DE USUARIOS CON ACCIONES EN LOTE Y SELECCIÓN MÚLTIPLE -->
     <section class="admin-card">
-      <h3>Lista de Alumnos y Cursos Asignados</h3>
+      <div class="table-header-tools" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <h3 style="margin: 0;">Lista de Usuarios Registrados</h3>
+          
+          <!-- BARRA DE ACCIONES EN LOTE -->
+          <div id="batch-actions-container" style="display: none; align-items: center; gap: 8px; background: var(--input-bg); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <span style="font-size: 0.85rem; font-weight: bold;">Acción en lote (<span id="selected-count">0</span>):</span>
+            
+            <select id="batch-action-select" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
+              <option value="move">🏫 Mover a Institución...</option>
+              <option value="role-student">👨‍🎓 Cambiar a Rol Estudiante</option>
+              <option value="role-teacher">👨‍🏫 Cambiar a Rol Profesor</option>
+              <option value="role-admin">🛡️ Cambiar a Rol Admin</option>
+              <option value="delete">🗑️ Eliminar Seleccionados</option>
+            </select>
+
+            <select id="batch-target-school" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 0.85rem;">
+              <option value="">-- Selecciona destino --</option>
+            </select>
+
+            <button type="button" id="btn-apply-batch-action" class="btn-primary btn-sm" style="padding: 6px 12px; font-weight: bold; cursor: pointer;">
+              Aplicar
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <label for="filter-school" style="font-size: 0.9rem; font-weight: 600;">Filtrar Escuela:</label>
+          <select id="filter-school" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
+            <option value="ALL">Todas las escuelas</option>
+          </select>
+        </div>
+      </div>
+
       <div class="table-responsive">
         <table class="users-table">
           <thead>
             <tr>
+              <th style="width: 40px; text-align: center;">
+                <input type="checkbox" id="select-all-students" title="Seleccionar todos">
+              </th>
               <th>Correo Electrónico</th>
+              <th>Escuela / Institución</th>
               <th>Rol</th>
               <th>Cursos Asignados</th>
               <th>Acciones</th>
@@ -145,7 +260,7 @@
           </thead>
           <tbody id="users-table-body">
             <tr>
-              <td colspan="4" class="text-center">Cargando lista de usuarios...</td>
+              <td colspan="6" class="text-center">Cargando lista de usuarios...</td>
             </tr>
           </tbody>
         </table>
@@ -158,15 +273,13 @@
     <div class="modal-content">
       <button type="button" id="btn-close-preview-modal" class="close-btn">&times;</button>
       <h3>Seleccionar Estudiante para Vista Previa</h3>
-      <p class="help-text">Selecciona un alumno o escribe su correo para probar su experiencia en la plataforma:</p>
+      <p class="help-text">Selecciona un alumno o filtra por escuela para simular su panel:</p>
       
-      <div class="form-group full-width" style="margin: 15px 0;">
-        <input 
-          type="search" 
-          id="search-preview-input" 
-          placeholder="🔍 Escribe para filtrar por correo..." 
-          style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); box-sizing: border-box;"
-        >
+      <div style="display: flex; gap: 10px; margin: 15px 0;">
+        <input type="search" id="search-preview-input" placeholder="🔍 Filtrar por correo..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
+        <select id="modal-filter-school" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
+          <option value="ALL">Todas las escuelas</option>
+        </select>
       </div>
 
       <div class="preview-generic-box">
@@ -175,9 +288,7 @@
         </button>
       </div>
 
-      <div id="preview-students-list" class="preview-students-list">
-        <!-- Lista dinámica de estudiantes -->
-      </div>
+      <div id="preview-students-list" class="preview-students-list"></div>
     </div>
   </div>
 

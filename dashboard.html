@@ -3,52 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mis Cursos - Plataforma</title>
+  <title>Mi Panel - Cursos Educativos</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- Banner para vista previa de Administrador -->
-  <div id="admin-preview-banner" class="preview-banner" hidden>
-    Modo Vista de Estudiante Activo. <a href="admin.html">Regresar al Panel de Administrador</a>
+  <!-- Pantalla de Carga (Preload) -->
+  <div id="app-preload" class="preload-screen">
+    <div class="preload-content">
+      <div class="spinner"></div>
+      <p class="preload-text">Cargando tu panel de cursos...</p>
+    </div>
   </div>
 
-  <!-- Encabezado con Menú Desplegable y Conmutador de Tema -->
+  <!-- Header / Barra de Navegación -->
   <header class="navbar">
     <div class="logo">
-      <a href="dashboard.html" class="brand-title">Mis Cursos</a>
+      <a href="dashboard.html" class="brand-title">Plataforma Educativa</a>
     </div>
 
     <div class="user-profile">
       <div class="user-menu-container">
-        <button id="user-menu-btn" class="user-menu-btn">
+        <button id="user-menu-btn" class="user-menu-btn" type="button">
           <img id="nav-user-avatar" src="https://via.placeholder.com/32" alt="Avatar" class="nav-avatar">
           <span id="nav-user-name" class="user-name-text">Cargando...</span>
           <span class="menu-arrow">▼</span>
         </button>
 
         <div id="user-dropdown-menu" class="dropdown-menu" hidden>
-          <a href="dashboard.html" class="dropdown-item">
-            <span>🏠</span> Mis Cursos
-          </a>
-          <a href="profile.html" class="dropdown-item">
-            <span>⚙️</span> Editar Perfil
-          </a>
+          <a href="dashboard.html" class="dropdown-item"><span>🏠</span> Mis Cursos</a>
+          <a href="profile.html" class="dropdown-item"><span>⚙️</span> Editar Perfil</a>
           
-          <!-- Botón para alternar Tema Claro / Oscuro -->
           <button type="button" id="btn-toggle-theme" class="dropdown-item theme-toggle-btn">
             🌙 <span>Modo Oscuro</span>
           </button>
 
           <div id="admin-menu-option" hidden>
-            <a href="admin.html" class="dropdown-item">
-              <span>🛡️</span> Panel Admin
-            </a>
+            <a href="admin.html" class="dropdown-item"><span>🛡️</span> Panel Admin</a>
           </div>
 
           <div class="dropdown-divider"></div>
 
-          <button id="btn-dropdown-logout" class="dropdown-item text-danger">
+          <button type="button" id="btn-dropdown-logout" class="dropdown-item text-danger">
             <span>🚪</span> Cerrar Sesión
           </button>
         </div>
@@ -56,14 +52,27 @@
     </div>
   </header>
 
-  <!-- Contenido Principal -->
-  <main class="container">
-    <h2>Tus Cursos Disponibles</h2>
-    
-    <div id="courses-status-msg" class="status-info">Cargando cursos asignados...</div>
+  <!-- Banner de Modo Simulación / Vista Previa -->
+  <div id="preview-mode-banner" class="preview-banner" hidden style="background: #fef3c7; border-bottom: 2px solid #f59e0b; padding: 10px 20px; text-align: center; color: #92400e; font-weight: bold;">
+    👁️ Modo Simulación de Estudiante: Viendo el panel de <span id="preview-student-email-text"></span>
+  </div>
 
-    <!-- Cuadrícula dinámica de Tarjetas -->
-    <div id="courses-grid" class="courses-grid"></div>
+  <main class="container">
+    <div class="dashboard-header" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <h2 style="margin: 0;">Mis Cursos Asignados</h2>
+        <p style="margin: 5px 0 0 0; color: var(--text-secondary);">Accede al contenido de las materias que tienes habilitadas.</p>
+      </div>
+
+      <div class="student-info-badge" style="background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+        🏫 Institución: <span id="student-school-badge" style="color: #2563eb;">Cargando...</span>
+      </div>
+    </div>
+
+    <!-- Contenedor Dinámico de Tarjetas de Cursos -->
+    <section id="courses-container">
+      <p class="text-center">Cargando tus cursos asignados...</p>
+    </section>
   </main>
 
   <script type="module" src="js/dashboard.js"></script>

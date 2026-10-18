@@ -4,111 +4,110 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-
 import { COURSES_CATALOG } from './courses-data.js';
 import { initNavbar } from './navbar.js';
 
+// Inicializar la barra de navegación y sincronización de tema claro/oscuro
 initNavbar();
 
-const previewBanner = document.getElementById('admin-preview-banner');
-const coursesGrid = document.getElementById('courses-grid');
-const statusMsg = document.getElementById('courses-status-msg');
+const coursesContainer = document.getElementById('courses-container');
+const studentSchoolBadge = document.getElementById('student-school-badge');
+const previewBanner = document.getElementById('preview-mode-banner');
+const previewStudentEmailText = document.getElementById('preview-student-email-text');
 
+let currentUserEmail = '';
+
+// Validar autenticación o parámetro de simulación desde el panel de administración
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const previewType = urlParams.get('preview');
+  const previewEmailParam = urlParams.get('previewEmail');
+
+  if (!user && !previewEmailParam) {
     window.location.href = 'index.html';
     return;
   }
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const isPreviewMode = urlParams.get('preview') === 'student';
-  const previewEmail = urlParams.get('previewEmail'); // Correo específico a simular
-
-  try {
-    const userDocRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(userDocRef);
-    const userRole = docSnap.exists() ? docSnap.data().role : 'student';
-
-    if (userRole === 'admin' && !isPreviewMode) {
-      window.location.href = 'admin.html';
-      return;
+  if (previewType === 'student' && previewEmailParam) {
+    currentUserEmail = previewEmailParam.toLowerCase();
+    if (previewBanner) {
+      previewBanner.removeAttribute('hidden');
+      if (previewStudentEmailText) previewStudentEmailText.textContent = currentUserEmail;
     }
-
-    if (userRole === 'admin' && isPreviewMode) {
-      if (previewBanner) {
-        previewBanner.hidden = false;
-        if (previewEmail) {
-          previewBanner.innerHTML = `Modo Vista previa activo para el alumno: <strong>${previewEmail}</strong>. <a href="admin.html">Regresar al Panel Admin</a>`;
-        }
-      }
-    }
-
-    // Si el admin solicitó la vista previa de un usuario específico, consultamos ese correo
-    const emailToRender = (userRole === 'admin' && previewEmail) 
-      ? previewEmail.toLowerCase() 
-      : user.email.toLowerCase();
-
-    await renderUserCourses(emailToRender);
-
-  } catch (error) {
-    console.error("Error al validar el perfil:", error);
-    if (statusMsg) statusMsg.textContent = "Ocurrió un error al verificar tu sesión.";
+  } else if (user) {
+    currentUserEmail = user.email.toLowerCase();
   }
+
+  await loadUserCoursesAndSchool(currentUserEmail);
 });
 
-async function renderUserCourses(email) {
+// Cargar la escuela e instituciones asignadas desde Firestore
+async function loadUserCoursesAndSchool(email) {
+  if (!coursesContainer) return;
+
   try {
+    coursesContainer.innerHTML = '<p class="text-center">Cargando tus cursos asignados...</p>';
+
     const assignedRef = doc(db, "assigned_roles", email);
     const assignedSnap = await getDoc(assignedRef);
 
-    let allowedCourses = [];
+    let allowedCourseIds = [];
+    let userSchoolName = 'Sin Institución Asignada';
 
-    if (assignedSnap.exists() && assignedSnap.data().allowedCourses) {
-      allowedCourses = assignedSnap.data().allowedCourses;
+    if (assignedSnap.exists()) {
+      const data = assignedSnap.data();
+      allowedCourseIds = data.allowedCourses || [];
+      userSchoolName = data.school || 'Sin Institución Asignada';
     }
 
-    if (allowedCourses.length === 0) {
-      statusMsg.textContent = `Aún no hay cursos asignados para ${email}.`;
-      coursesGrid.innerHTML = '';
-      return;
+    if (studentSchoolBadge) {
+      studentSchoolBadge.textContent = userSchoolName;
     }
 
-    statusMsg.textContent = `Mostrando ${allowedCourses.length} curso(s) activo(s) de ${email}:`;
-    coursesGrid.innerHTML = '';
-
-    let coursesRendered = 0;
-
-    allowedCourses.forEach(courseId => {
-      const course = COURSES_CATALOG[courseId];
-      if (course) {
-        const card = createCourseCard(course);
-        coursesGrid.appendChild(card);
-        coursesRendered++;
-      }
-    });
-
-    if (coursesRendered === 0) {
-      statusMsg.textContent = "Los cursos asignados no coinciden con el catálogo disponible.";
-    }
+    renderCoursesCards(allowedCourseIds);
 
   } catch (error) {
-    console.error("Error al cargar los cursos desde Firestore:", error);
-    statusMsg.textContent = "Ocurrió un error al consultar los cursos asignados.";
+    console.error("Error al consultar cursos del estudiante:", error);
+    coursesContainer.innerHTML = '<p class="text-center text-danger">Error al cargar la lista de cursos.</p>';
   }
 }
 
-function createCourseCard(course) {
-  const card = document.createElement('div');
-  card.className = 'course-card';
-  card.innerHTML = `
-    <div>
-      <span class="card-tag">${course.tag}</span>
-      <h3>${course.title}</h3>
-      <p>${course.description}</p>
-    </div>
-    <button class="btn-start-course" data-path="${course.folderPath}">Entrar al Curso</button>
-  `;
+// Renderizar las tarjetas de los cursos habilitados
+function renderCoursesCards(courseIds) {
+  coursesContainer.innerHTML = '';
 
-  card.querySelector('.btn-start-course').addEventListener('click', (e) => {
-    const targetPath = e.target.getAttribute('data-path');
-    window.location.href = targetPath;
+  if (courseIds.length === 0) {
+    coursesContainer.innerHTML = `
+      <div class="empty-courses-box" style="text-align: center; padding: 40px; background: var(--card-bg); border-radius: 12px; border: 1px dashed var(--border-color); width: 100%;">
+        <h3>🎓 No tienes cursos asignados aún</h3>
+        <p style="color: var(--text-secondary); margin-top: 8px;">Ponte en contacto con tu profesor o administrador de la institución para solicitar acceso a tus materias.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'courses-grid';
+  grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; width: 100%;';
+
+  courseIds.forEach(id => {
+    const course = COURSES_CATALOG[id];
+    if (!course) return;
+
+    const card = document.createElement('div');
+    card.className = 'course-card';
+    card.style.cssText = 'background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s ease, box-shadow 0.2s ease;';
+
+    card.innerHTML = `
+      <div class="course-card-body" style="padding: 20px;">
+        <span class="course-tag" style="background: rgba(37, 99, 235, 0.1); color: #2563eb; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">Curso Habilitado</span>
+        <h3 style="margin: 12px 0 8px 0; font-size: 1.2rem; color: var(--text-color);">${course.title}</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4; margin: 0;">${course.description || 'Ingresa al contenido del curso y completa tus módulos de aprendizaje.'}</p>
+      </div>
+      <div class="course-card-footer" style="padding: 15px 20px; background: var(--input-bg); border-top: 1px solid var(--border-color); text-align: right;">
+        <a href="${course.folderPath}" class="btn-primary" style="display: inline-block; padding: 8px 16px; font-size: 0.9rem; border-radius: 6px; text-decoration: none; font-weight: bold;">Entrar al Curso →</a>
+      </div>
+    `;
+
+    grid.appendChild(card);
   });
 
-  return card;
+  coursesContainer.appendChild(grid);
 }
