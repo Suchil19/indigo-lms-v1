@@ -1,5 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { COURSES_CATALOG } from './courses-data.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   collection, 
   onSnapshot, 
@@ -11,9 +12,6 @@ import {
   writeBatch 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ==========================================================================
-// CONFIGURACIÓN CENTRALIZADA DE EMAILJS (CREDENCIALES REALES)
-// ==========================================================================
 const EMAILJS_CONFIG = {
   PUBLIC_KEY: "Sme5UkbtF9t2q26pn",
   SERVICE_ID: "service_dsymu5l",
@@ -30,9 +28,12 @@ let pendingExcelGroups = [];
 let pendingExcelGroupStudents = []; 
 let unsubscribeUsersListener = null;
 
-// ==========================================================================
-// NOTIFICACIÓN FLOTANTE (TOAST)
-// ==========================================================================
+// Variables de Paginación Globales (Por defecto 20)
+let currentPage = 1;
+let rowsPerPage = 20;
+
+let lastSentEmailTime = {};
+
 function showToast(message, type = 'success') {
   const toast = document.getElementById('admin-toast');
   if (!toast) return;
@@ -45,9 +46,6 @@ function showToast(message, type = 'success') {
   }, 3500);
 }
 
-// ==========================================================================
-// RENDERIZADO DEL SELECTOR DE CURSOS
-// ==========================================================================
 export function renderAdminCoursesSelector() {
   const container = document.getElementById('admin-courses-checkboxes-container');
   if (!container) return;
@@ -92,11 +90,15 @@ function setSelectAdminCourses(coursesArray = []) {
   });
 }
 
-// ==========================================================================
-// ENVÍO DE NOTIFICACIONES VÍA EMAILJS CON ENLACES VÁLIDOS
-// ==========================================================================
 async function sendNotificationEmail(recipientEmail, role, school) {
   if (!window.emailjs || !EMAILJS_CONFIG.PUBLIC_KEY) return;
+
+  const now = Date.now();
+  if (lastSentEmailTime[recipientEmail] && (now - lastSentEmailTime[recipientEmail] < 10000)) {
+    console.log(`Correo a ${recipientEmail} omitido para evitar duplicidad.`);
+    return;
+  }
+  lastSentEmailTime[recipientEmail] = now;
 
   const origin = window.location.origin;
   const path = window.location.pathname.replace('admin.html', '');
@@ -111,20 +113,60 @@ async function sendNotificationEmail(recipientEmail, role, school) {
 
   try {
     await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, templateParams);
-    console.log(`Notificación enviada a ${recipientEmail}`);
   } catch (err) {
     console.error(`Error enviando notificación a ${recipientEmail}:`, err);
   }
 }
 
-// ==========================================================================
-// CÓDIGO PRINCIPAL ADMIN Y GESTIÓN DE ESCUELAS / GRUPOS
-// ==========================================================================
+// 📊 Actualizar estadísticas en tiempo real
+function updateAdminStatistics() {
+  const totalUsersEl = document.getElementById('stat-total-users');
+  const totalSchoolsEl = document.getElementById('stat-total-schools');
+  const totalCoursesEl = document.getElementById('stat-total-courses');
+
+  if (totalUsersEl) totalUsersEl.textContent = allUsers.length;
+  if (totalSchoolsEl) totalSchoolsEl.textContent = allSchools.length;
+  if (totalCoursesEl) {
+    const courseCount = Object.keys(COURSES_CATALOG || {}).length;
+    totalCoursesEl.textContent = courseCount;
+  }
+}
+
 export async function initAdminPanel() {
-  renderAdminCoursesSelector();
-  await loadSchoolsCatalog();
-  listenToUsersRealtime();
-  setupAdminEventListeners();
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    try {
+      const userEmail = user.email.trim().toLowerCase();
+      const roleRef = doc(db, "assigned_roles", userEmail);
+      const roleSnap = await getDoc(roleRef);
+
+      let userRole = 'student';
+      if (roleSnap.exists()) {
+        userRole = (roleSnap.data().role || 'student').trim().toLowerCase();
+      }
+
+      if (userRole !== 'admin') {
+        alert("⛔ Acceso no autorizado. Tu cuenta no cuenta con permisos de administrador.");
+        window.location.href = 'dashboard.html';
+        return;
+      }
+
+      renderAdminCoursesSelector();
+      await loadSchoolsCatalog();
+      listenToUsersRealtime();
+      setupAdminEventListeners();
+      setupUserSearchFilter();
+      setupModalListeners();
+
+    } catch (err) {
+      console.error("Error verificando permisos de administrador:", err);
+      window.location.href = 'dashboard.html';
+    }
+  });
 }
 
 async function loadSchoolsCatalog() {
@@ -158,55 +200,11 @@ async function loadSchoolsCatalog() {
       });
 
       renderSchoolsTable();
-      renderSchoolGroupsChips();
+      updateAdminStatistics();
     });
   } catch (err) {
     console.error("Error al cargar escuelas:", err);
   }
-}
-
-function renderSchoolGroupsChips() {
-  const container = document.getElementById('school-groups-list-container');
-  if (!container) return;
-
-  if (allSchools.length === 0) {
-    container.innerHTML = '<span style="opacity: 0.6;">No hay escuelas para mostrar grupos.</span>';
-    return;
-  }
-
-  let html = '<strong>Resumen de Grupos por Escuela:</strong><div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">';
-
-  allSchools.forEach(sch => {
-    const groups = sch.groups || [];
-    const groupBadges = groups.length > 0 
-      ? groups.map(g => `<span class="badge badge-info" style="margin-right: 4px; display: inline-flex; align-items: center; gap: 4px;">${g} <button type="button" class="btn-delete-group" data-school="${sch.id}" data-group="${g}" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; padding:0;">×</button></span>`).join(' ')
-      : '<span style="opacity: 0.5;">Sin grupos registrados</span>';
-
-    html += `<div style="background: var(--input-bg); padding: 8px 12px; border-radius: 6px;">
-      <strong>${sch.name}:</strong> ${groupBadges}
-    </div>`;
-  });
-
-  html += '</div>';
-  container.innerHTML = html;
-
-  document.querySelectorAll('.btn-delete-group').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const schoolId = e.target.getAttribute('data-school');
-      const groupName = e.target.getAttribute('data-group');
-      const schoolObj = allSchools.find(s => s.id === schoolId);
-
-      if (schoolObj && confirm(`¿Eliminar el grupo '${groupName}' de ${schoolObj.name}?`)) {
-        const updatedGroups = (schoolObj.groups || []).filter(g => g !== groupName);
-        try {
-          await updateDoc(doc(db, "schools", schoolId), { groups: updatedGroups });
-          showToast(`Grupo '${groupName}' eliminado`, "success");
-        } catch (err) {
-          showToast("Error al eliminar grupo: " + err.message, "error");
-        }
-      }
-    });
-  });
 }
 
 function updateGroupSelectDropdown(schoolName, targetDropdownId) {
@@ -224,9 +222,6 @@ function updateGroupSelectDropdown(schoolName, targetDropdownId) {
   dropdown.innerHTML = optionsHTML;
 }
 
-// ==========================================================================
-// RENDERIZADO DE TABLA DE ESCUELAS CON GRUPOS Y ALUMNOS ANIDADOS
-// ==========================================================================
 function renderSchoolsTable() {
   const tbody = document.getElementById('admin-schools-tbody');
   if (!tbody) return;
@@ -247,7 +242,7 @@ function renderSchoolsTable() {
       <td style="padding: 10px; font-weight: bold; font-size: 0.95rem;">🏫 ${school.name}</td>
       <td style="padding: 10px;"><code style="background: var(--card-bg); padding: 2px 6px; border-radius: 4px;">${school.domain || 'Sin Dominio'}</code></td>
       <td style="padding: 10px;">${school.logo ? `<img src="${school.logo}" alt="Logo" style="height: 24px; object-fit: contain;">` : '<span style="opacity:0.5;">Sin Logo</span>'}</td>
-      <td style="padding: 10px;">
+      <td style="padding: 10px; text-align: right;">
         <button type="button" class="btn btn-sm btn-outline btn-edit-school" data-id="${school.id}">✏️ Editar</button>
         <button type="button" class="btn btn-sm btn-danger btn-delete-school" data-id="${school.id}">🗑️ Eliminar</button>
       </td>
@@ -267,11 +262,16 @@ function renderSchoolsTable() {
     } else {
       groups.forEach(groupName => {
         const groupStudents = allUsers.filter(u => {
-          const userSchool = (u.school || '').trim().toLowerCase();
+          const userSchools = (u.schools || [u.school || 'General']).map(s => s.toString().trim().toLowerCase());
+          const userGroups = (u.groups || [u.group || 'Sin Grupo']).map(g => g.toString().trim().toLowerCase());
+          
           const targetSchool = school.name.trim().toLowerCase();
-          const userGroup = (u.group || 'Sin Grupo').trim().toLowerCase();
           const targetGroup = groupName.trim().toLowerCase();
-          return (userSchool === targetSchool) && (userGroup === targetGroup);
+
+          const belongsToSchool = userSchools.includes(targetSchool) || userSchools.includes('general');
+          const belongsToGroup = userGroups.includes(targetGroup);
+
+          return belongsToSchool && belongsToGroup;
         });
 
         const trGroup = document.createElement('tr');
@@ -284,7 +284,7 @@ function renderSchoolsTable() {
               ▶ 👥 <strong>${groupName}</strong> <span style="font-weight: normal; opacity: 0.8; color: #8b5cf6;">(${groupStudents.length} alumnos inscritos)</span>
             </button>
           </td>
-          <td style="padding: 6px 10px;">
+          <td style="padding: 6px 10px; text-align: right;">
             <button type="button" class="btn btn-sm btn-outline btn-delete-indent-group" data-school="${school.id}" data-group="${groupName}" style="padding: 2px 8px; font-size: 0.75rem; color: #ef4444; border-color: #ef4444;">
               🗑️ Eliminar Grupo
             </button>
@@ -303,7 +303,8 @@ function renderSchoolsTable() {
         } else {
           studentsListHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 0.8rem;">';
           groupStudents.forEach(st => {
-            const courseBadges = (st.allowedCourses || []).map(courseId => {
+            const validStudentCourses = [...new Set(st.allowedCourses || [])].filter(id => COURSES_CATALOG[id]);
+            const courseBadges = validStudentCourses.map(courseId => {
               const course = COURSES_CATALOG[courseId];
               return `<span class="badge badge-info" style="font-size: 0.7rem; padding: 2px 6px; margin-right: 3px;">${course ? course.icon : '📘'} ${courseId}</span>`;
             }).join(' ');
@@ -314,6 +315,7 @@ function renderSchoolsTable() {
                 <td style="padding: 6px 8px;"><span class="badge badge-role-${st.role}">${st.role || 'student'}</span></td>
                 <td style="padding: 6px 8px;">${courseBadges || '<span style="opacity:0.5;">Sin Cursos</span>'}</td>
                 <td style="padding: 6px 8px; text-align: right;">
+                  <button type="button" class="btn btn-sm btn-outline btn-impersonate-user" data-email="${st.email || st.id}" style="padding: 2px 6px; font-size: 0.75rem; color: #8b5cf6; border-color: #8b5cf6;">👁️ Ver Vista</button>
                   <button type="button" class="btn btn-sm btn-outline btn-edit-user" data-id="${st.id}" style="padding: 2px 6px; font-size: 0.75rem;">✏️ Editar</button>
                   <button type="button" class="btn btn-sm btn-outline btn-move-student" data-id="${st.id}" data-school="${st.school}" data-group="${st.group}" style="padding: 2px 6px; font-size: 0.75rem; color: #3b82f6; border-color: #3b82f6;">📦 Mover</button>
                   <button type="button" class="btn btn-sm btn-danger btn-delete-user" data-id="${st.id}" style="padding: 2px 6px; font-size: 0.75rem;">🗑️ Borrar</button>
@@ -427,7 +429,7 @@ function renderSchoolsTable() {
           await updateDoc(doc(db, "schools", schoolId), { groups: updatedGroups });
           showToast(`Grupo '${groupName}' eliminado`, "success");
         } catch (err) {
-          showToast("Error: " + err.message, "error");
+          showToast("Error al eliminar grupo: " + err.message, "error");
         }
       }
     });
@@ -436,55 +438,6 @@ function renderSchoolsTable() {
   setupRowActionButtons();
 }
 
-function renderGroupsPreview() {
-  const container = document.getElementById('groups-preview-container');
-  const countSpan = document.getElementById('groups-preview-count');
-  const studentsCountSpan = document.getElementById('students-preview-count');
-  const chipsContainer = document.getElementById('groups-preview-chips');
-  const summaryDiv = document.getElementById('students-preview-summary');
-
-  if (!container || !chipsContainer) return;
-
-  if (pendingExcelGroups.length === 0 && pendingExcelGroupStudents.length === 0) {
-    container.style.display = 'none';
-    chipsContainer.innerHTML = '';
-    return;
-  }
-
-  container.style.display = 'block';
-  if (countSpan) countSpan.textContent = pendingExcelGroups.length;
-  if (studentsCountSpan) studentsCountSpan.textContent = pendingExcelGroupStudents.length;
-
-  chipsContainer.innerHTML = '';
-  pendingExcelGroups.forEach((groupName, idx) => {
-    const chip = document.createElement('span');
-    chip.className = 'badge badge-info';
-    chip.style.display = 'inline-flex';
-    chip.style.alignItems = 'center';
-    chip.style.gap = '6px';
-    chip.style.padding = '4px 8px';
-    chip.innerHTML = `${groupName} <button type="button" class="btn-remove-group-chip" data-index="${idx}" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">×</button>`;
-    chipsContainer.appendChild(chip);
-  });
-
-  if (summaryDiv) {
-    summaryDiv.innerHTML = pendingExcelGroupStudents.length > 0 
-      ? `Se registrarán ${pendingExcelGroupStudents.length} alumnos validados con el dominio institucional.` 
-      : `No se encontraron correos válidos para el dominio de la escuela en el archivo.`;
-  }
-
-  document.querySelectorAll('.btn-remove-group-chip').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = parseInt(e.target.getAttribute('data-index'));
-      pendingExcelGroups.splice(index, 1);
-      renderGroupsPreview();
-    });
-  });
-}
-
-// ==========================================================================
-// AUTOCOMPLETADO Y BÚSQUEDA EN TIEMPO REAL DE CORREOS
-// ==========================================================================
 function updateEmailDatalist(users) {
   const datalist = document.getElementById('registered-emails-list');
   if (!datalist) return;
@@ -498,9 +451,6 @@ function updateEmailDatalist(users) {
 }
 
 function listenToUsersRealtime() {
-  const tbody = document.getElementById('admin-users-tbody');
-  if (!tbody) return;
-
   if (unsubscribeUsersListener) unsubscribeUsersListener();
 
   unsubscribeUsersListener = onSnapshot(collection(db, "assigned_roles"), (snapshot) => {
@@ -510,26 +460,86 @@ function listenToUsersRealtime() {
     });
     
     updateEmailDatalist(allUsers);
-    renderUsersGeneralTable(allUsers);
+    updateAdminStatistics();
+    
+    const searchInput = document.getElementById('admin-user-search-input');
+    const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    filterAndRenderUsers(searchTerm);
+
     renderSchoolsTable();
   });
 }
 
+function filterAndRenderUsers(searchTerm) {
+  let filtered = allUsers;
+
+  if (searchTerm) {
+    filtered = allUsers.filter(user => {
+      const email = (user.email || user.id || '').toLowerCase();
+      const role = (user.role || '').toLowerCase();
+      const school = (user.school || '').toLowerCase();
+      const group = (user.group || '').toLowerCase();
+
+      return email.includes(searchTerm) || 
+             role.includes(searchTerm) || 
+             school.includes(searchTerm) || 
+             group.includes(searchTerm);
+    });
+  }
+
+  renderUsersGeneralTable(filtered);
+}
+
+function setupUserSearchFilter() {
+  const searchInput = document.getElementById('admin-user-search-input');
+  const perPageSelect = document.getElementById('users-per-page-select');
+
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      currentPage = 1;
+      const term = e.target.value.trim().toLowerCase();
+      filterAndRenderUsers(term);
+    });
+  }
+
+  if (perPageSelect) {
+    perPageSelect.addEventListener('change', (e) => {
+      rowsPerPage = parseInt(e.target.value);
+      currentPage = 1; // Reiniciar a la primera página al cambiar cantidad
+      const searchInput = document.getElementById('admin-user-search-input');
+      const term = searchInput ? searchInput.value.trim().toLowerCase() : '';
+      filterAndRenderUsers(term);
+    });
+  }
+}
+
 function renderUsersGeneralTable(users) {
   const tbody = document.getElementById('admin-users-tbody');
+  const infoDiv = document.getElementById('users-pagination-info');
+  const paginationDiv = document.getElementById('users-pagination-buttons');
   if (!tbody) return;
 
   if (users.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios registrados.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: var(--text-secondary);">No se encontraron usuarios coincidentes.</td></tr>';
+    if (infoDiv) infoDiv.textContent = 'Mostrando 0 - 0 de 0';
+    if (paginationDiv) paginationDiv.innerHTML = '';
     return;
   }
 
+  const totalPages = Math.ceil(users.length / rowsPerPage);
+  if (currentPage > totalPages) currentPage = totalPages || 1;
+
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedUsers = users.slice(startIndex, endIndex);
+
   tbody.innerHTML = '';
-  users.forEach(user => {
+  paginatedUsers.forEach(user => {
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border-color)';
     
-    const courseBadges = (user.allowedCourses || []).map(courseId => {
+    const validUserCourses = [...new Set(user.allowedCourses || [])].filter(id => COURSES_CATALOG[id]);
+    const courseBadges = validUserCourses.map(courseId => {
       const course = COURSES_CATALOG[courseId];
       return `<span class="badge badge-info" style="margin-right: 4px; display: inline-flex; align-items: center; gap: 3px;">${course ? course.icon : '📘'} ${courseId}</span>`;
     }).join(' ');
@@ -540,18 +550,55 @@ function renderUsersGeneralTable(users) {
       <td style="padding: 10px;">${user.school || 'General'}</td>
       <td style="padding: 10px;"><span class="badge badge-info">${user.group || 'Sin Grupo'}</span></td>
       <td style="padding: 10px;">${courseBadges || '<span style="opacity:0.5;">Sin Cursos</span>'}</td>
-      <td style="padding: 10px;">
-        <button type="button" class="btn btn-sm btn-outline btn-edit-user" data-id="${user.id}">✏️ Editar</button>
-        <button type="button" class="btn btn-sm btn-danger btn-delete-user" data-id="${user.id}">🗑️ Eliminar</button>
+      <td style="padding: 10px; text-align: right;">
+        <button type="button" class="btn btn-sm btn-outline btn-impersonate-user" data-email="${user.email || user.id}" style="padding: 2px 6px; font-size: 0.75rem; color: #8b5cf6; border-color: #8b5cf6;">👁️ Ver</button>
+        <button type="button" class="btn btn-sm btn-outline btn-edit-user" data-id="${user.id}" style="padding: 2px 6px; font-size: 0.75rem;">✏️</button>
+        <button type="button" class="btn btn-sm btn-danger btn-delete-user" data-id="${user.id}" style="padding: 2px 6px; font-size: 0.75rem;">🗑️</button>
       </td>
     `;
     tbody.appendChild(tr);
   });
 
+  if (infoDiv) {
+    infoDiv.textContent = `Mostrando ${startIndex + 1} - ${Math.min(endIndex, users.length)} de ${users.length} usuarios`;
+  }
+
+  if (paginationDiv) {
+    paginationDiv.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.type = 'button';
+      pageBtn.textContent = i;
+      pageBtn.className = `btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline'}`;
+      pageBtn.style.padding = '4px 10px';
+      pageBtn.addEventListener('click', () => {
+        currentPage = i;
+        renderUsersGeneralTable(users);
+      });
+      paginationDiv.appendChild(pageBtn);
+    }
+  }
+
   setupRowActionButtons();
 }
 
 function setupRowActionButtons() {
+  document.querySelectorAll('.btn-impersonate-user').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const targetEmail = e.target.getAttribute('data-email');
+      if (!targetEmail) return;
+
+      localStorage.setItem('impersonate_user_email', targetEmail);
+      localStorage.setItem('is_impersonating', 'true');
+
+      showToast(`Cambiando a la vista de: ${targetEmail}`, "success");
+
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 400);
+    });
+  });
+
   document.querySelectorAll('.btn-edit-user').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const userId = e.target.getAttribute('data-id');
@@ -576,20 +623,197 @@ function setupRowActionButtons() {
   document.querySelectorAll('.btn-delete-user').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       const userId = e.target.getAttribute('data-id');
-      if (confirm(`¿Eliminar acceso para ${userId}?`)) {
+      const targetUser = allUsers.find(u => u.id === userId);
+      
+      if (!targetUser) return;
+
+      const SUPER_ADMIN_EMAIL = "suchiltv@gmail.com"; 
+      const currentAdminEmail = auth.currentUser ? auth.currentUser.email.trim().toLowerCase() : '';
+      const isSuperAdmin = currentAdminEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+
+      if (targetUser.email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+        showToast("⚠️ No se puede eliminar al Super Administrador del sistema.", "error");
+        return;
+      }
+
+      const targetRole = (targetUser.role || 'student').trim().toLowerCase();
+      if (targetRole === 'admin' && !isSuperAdmin) {
+        showToast("⛔ Solo el Super Usuario puede eliminar cuentas con rol de Administrador.", "error");
+        return;
+      }
+
+      if (confirm(`¿Estás seguro de eliminar el acceso para ${userId}?`)) {
         try {
           await deleteDoc(doc(db, "assigned_roles", userId));
-          showToast("Usuario eliminado", "success");
+          showToast("Usuario eliminado correctamente", "success");
         } catch (err) {
-          showToast("Error: " + err.message, "error");
+          showToast("Error al eliminar: " + err.message, "error");
         }
       }
     });
   });
 }
 
+function renderGroupsPreview() {
+  const modal = document.getElementById('excel-preview-modal');
+  const countSpan = document.getElementById('modal-groups-count');
+  const studentsCountSpan = document.getElementById('modal-students-count');
+  const chipsContainer = document.getElementById('modal-groups-chips');
+  const studentsTbody = document.getElementById('modal-students-tbody');
+
+  if (!modal || !chipsContainer) return;
+
+  if (pendingExcelGroups.length === 0 && pendingExcelGroupStudents.length === 0) {
+    modal.style.display = 'none';
+    return;
+  }
+
+  modal.style.display = 'flex';
+  if (countSpan) countSpan.textContent = pendingExcelGroups.length;
+  if (studentsCountSpan) studentsCountSpan.textContent = pendingExcelGroupStudents.length;
+
+  chipsContainer.innerHTML = '';
+  pendingExcelGroups.forEach((groupName, idx) => {
+    const chip = document.createElement('span');
+    chip.className = 'badge badge-info';
+    chip.style.display = 'inline-flex';
+    chip.style.alignItems = 'center';
+    chip.style.gap = '6px';
+    chip.style.padding = '4px 8px';
+    chip.innerHTML = `${groupName} <button type="button" class="btn-remove-group-chip" data-index="${idx}" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">×</button>`;
+    chipsContainer.appendChild(chip);
+  });
+
+  if (studentsTbody) {
+    if (pendingExcelGroupStudents.length === 0) {
+      studentsTbody.innerHTML = '<tr><td colspan="4" style="padding: 10px; text-align: center; color: var(--text-secondary);">No hay alumnos en la lista.</td></tr>';
+    } else {
+      studentsTbody.innerHTML = '';
+      pendingExcelGroupStudents.forEach((st, idx) => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px dotted var(--border-color)';
+        tr.innerHTML = `
+          <td style="padding: 6px 8px;"><strong>${st.email}</strong></td>
+          <td style="padding: 6px 8px;"><span class="badge badge-info">${st.group}</span></td>
+          <td style="padding: 6px 8px;">${st.school}</td>
+          <td style="padding: 6px 8px; text-align: right;">
+            <button type="button" class="btn btn-sm btn-outline btn-remove-student-row" data-index="${idx}" style="padding: 2px 6px; font-size: 0.75rem; color: #ef4444; border-color: #ef4444;">🗑️ Quitar</button>
+          </td>
+        `;
+        studentsTbody.appendChild(tr);
+      });
+    }
+  }
+
+  document.querySelectorAll('.btn-remove-group-chip').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      pendingExcelGroups.splice(index, 1);
+      renderGroupsPreview();
+    });
+  });
+
+  document.querySelectorAll('.btn-remove-student-row').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.getAttribute('data-index'));
+      pendingExcelGroupStudents.splice(index, 1);
+      renderGroupsPreview();
+    });
+  });
+}
+
+function setupModalListeners() {
+  const modal = document.getElementById('excel-preview-modal');
+  const btnCloseX = document.getElementById('btn-close-modal-x');
+  const btnCancel = document.getElementById('btn-cancel-modal');
+  const btnConfirm = document.getElementById('btn-confirm-modal-import');
+  const excelGroupsInput = document.getElementById('admin-excel-groups-file-input');
+
+  const closeModal = () => {
+    if (modal) modal.style.display = 'none';
+    pendingExcelGroups = [];
+    pendingExcelGroupStudents = [];
+    if (excelGroupsInput) excelGroupsInput.value = '';
+  };
+
+  if (btnCloseX) btnCloseX.addEventListener('click', closeModal);
+  if (btnCancel) {
+    btnCancel.addEventListener('click', () => {
+      closeModal();
+      showToast("Importación cancelada", "error");
+    });
+  }
+
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', async () => {
+      const schoolName = document.getElementById('excel-groups-school-select').value;
+      if (!schoolName || pendingExcelGroups.length === 0) {
+        showToast("Selecciona una escuela y asegúrate de tener grupos válidos", "error");
+        return;
+      }
+
+      const schoolObj = allSchools.find(s => s.name === schoolName);
+      if (!schoolObj) {
+        showToast("Institución no encontrada", "error");
+        return;
+      }
+
+      const existingGroups = schoolObj.groups || [];
+      const combinedGroups = Array.from(new Set([...existingGroups, ...pendingExcelGroups]));
+      const allowedCourses = getSelectedCoursesFromAdmin();
+
+      try {
+        let newCount = 0;
+        let existingCount = 0;
+
+        for (const st of pendingExcelGroupStudents) {
+          const userRef = doc(db, "assigned_roles", st.email);
+          const userSnap = await getDoc(userRef);
+
+          let schoolsList = [st.school];
+          let groupsList = [st.group];
+          let coursesList = allowedCourses;
+
+          if (userSnap.exists()) {
+            existingCount++;
+            const existingData = userSnap.data();
+            const prevSchools = existingData.schools || [existingData.school || 'General'];
+            const prevGroups = existingData.groups || [existingData.group || 'Sin Grupo'];
+            const prevCourses = existingData.allowedCourses || [];
+
+            schoolsList = Array.from(new Set([...prevSchools, st.school]));
+            groupsList = Array.from(new Set([...prevGroups, st.group]));
+            coursesList = Array.from(new Set([...prevCourses, ...allowedCourses]));
+          } else {
+            newCount++;
+          }
+
+          await setDoc(userRef, {
+            email: st.email,
+            role: st.role,
+            school: st.school,
+            schools: schoolsList,
+            group: st.group,
+            groups: groupsList,
+            allowedCourses: coursesList,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
+
+        await updateDoc(doc(db, "schools", schoolObj.id), { groups: combinedGroups });
+
+        closeModal();
+        showToast(`✅ Importación exitosa: ${newCount} nuevos, ${existingCount} ya existían (datos actualizados).`, "success");
+
+      } catch (err) {
+        console.error("Error en importación masiva:", err);
+        showToast("Error al guardar en Firestore: " + err.message, "error");
+      }
+    });
+  }
+}
+
 function setupAdminEventListeners() {
-  // Alta Manual de Grupo
   const formGroup = document.getElementById('admin-group-form');
   if (formGroup) {
     formGroup.addEventListener('submit', async (e) => {
@@ -623,7 +847,14 @@ function setupAdminEventListeners() {
     });
   }
 
-  // LECTURA DE EXCEL DE GRUPOS Y ALUMNOS (CON VALIDACIÓN DE DOMINIO)
+  const schoolSelectElement = document.getElementById('admin-user-school-select');
+  if (schoolSelectElement) {
+    schoolSelectElement.addEventListener('change', (e) => {
+      const selectedSchoolName = e.target.value;
+      updateGroupSelectDropdown(selectedSchoolName, 'admin-user-group-select');
+    });
+  }
+
   const excelGroupsInput = document.getElementById('admin-excel-groups-file-input');
   if (excelGroupsInput) {
     excelGroupsInput.addEventListener('change', (e) => {
@@ -635,9 +866,6 @@ function setupAdminEventListeners() {
         excelGroupsInput.value = '';
         return;
       }
-
-      const schoolObj = allSchools.find(s => s.name === schoolName);
-      const schoolDomain = schoolObj && schoolObj.domain ? schoolObj.domain.trim().toLowerCase() : '';
 
       if (!file) return;
 
@@ -677,13 +905,7 @@ function setupAdminEventListeners() {
               if (!pendingExcelGroups.includes(groupVal)) {
                 pendingExcelGroups.push(groupVal);
               }
-              if (emailVal) {
-                // VALIDACIÓN ESTRICTA DE DOMINIO INSTITUCIONAL
-                if (schoolDomain && !emailVal.endsWith(schoolDomain)) {
-                  console.warn(`Correo rechazado por dominio no coincidente: ${emailVal} (requiere ${schoolDomain})`);
-                  return; // Omitir si no cumple con el dominio de la escuela
-                }
-
+              if (emailVal && emailVal.includes('@')) {
                 pendingExcelGroupStudents.push({
                   email: emailVal,
                   group: groupVal,
@@ -695,12 +917,12 @@ function setupAdminEventListeners() {
           });
 
           if (pendingExcelGroups.length === 0) {
-            showToast("No se encontraron grupos en el archivo Excel", "error");
+            showToast("No se encontraron grupos en las columnas del Excel", "error");
             return;
           }
 
           renderGroupsPreview();
-          showToast(`Se leyeron ${pendingExcelGroups.length} grupos y ${pendingExcelGroupStudents.length} alumnos válidos (${schoolDomain ? 'dominio: ' + schoolDomain : 'sin dominio estricto'})`, "success");
+          showToast(`Se leyeron ${pendingExcelGroups.length} grupos y ${pendingExcelGroupStudents.length} alumnos correctamente`, "success");
 
         } catch (err) {
           showToast("Error leyendo Excel: " + err.message, "error");
@@ -710,63 +932,6 @@ function setupAdminEventListeners() {
     });
   }
 
-  // CONFIRMAR IMPORTACIÓN DE GRUPOS Y ALUMNOS
-  const btnConfirmGroups = document.getElementById('btn-confirm-groups-import');
-  if (btnConfirmGroups) {
-    btnConfirmGroups.addEventListener('click', async () => {
-      const schoolName = document.getElementById('excel-groups-school-select').value;
-      if (!schoolName || pendingExcelGroups.length === 0) return;
-
-      const schoolObj = allSchools.find(s => s.name === schoolName);
-      if (!schoolObj) return;
-
-      const existingGroups = schoolObj.groups || [];
-      const combinedGroups = Array.from(new Set([...existingGroups, ...pendingExcelGroups]));
-      const allowedCourses = getSelectedCoursesFromAdmin();
-
-      try {
-        const batch = writeBatch(db);
-
-        batch.update(doc(db, "schools", schoolObj.id), { groups: combinedGroups });
-
-        pendingExcelGroupStudents.forEach(st => {
-          const userRef = doc(db, "assigned_roles", st.email);
-          batch.set(userRef, {
-            email: st.email,
-            role: st.role,
-            school: st.school,
-            group: st.group,
-            allowedCourses: allowedCourses,
-            updatedAt: new Date().toISOString()
-          }, { merge: true });
-        });
-
-        await batch.commit();
-
-        showToast(`¡Grupos y ${pendingExcelGroupStudents.length} alumnos importados con éxito!`, "success");
-        pendingExcelGroups = [];
-        pendingExcelGroupStudents = [];
-        renderGroupsPreview();
-        if (excelGroupsInput) excelGroupsInput.value = '';
-
-      } catch (err) {
-        showToast("Error al guardar en Firestore: " + err.message, "error");
-      }
-    });
-  }
-
-  const btnCancelGroups = document.getElementById('btn-cancel-groups-preview');
-  if (btnCancelGroups) {
-    btnCancelGroups.addEventListener('click', () => {
-      pendingExcelGroups = [];
-      pendingExcelGroupStudents = [];
-      renderGroupsPreview();
-      if (excelGroupsInput) excelGroupsInput.value = '';
-      showToast("Importación cancelada", "error");
-    });
-  }
-
-  // Formulario Institución
   const schoolForm = document.getElementById('admin-school-form');
   const btnCancelSchool = document.getElementById('btn-cancel-school-edit');
 
@@ -809,7 +974,6 @@ function setupAdminEventListeners() {
     });
   }
 
-  // BÚSQUEDA Y AUTOCOMPLETADO EN TIEMPO REAL DE CORREOS
   const emailInput = document.getElementById('admin-user-email-input');
   if (emailInput) {
     emailInput.addEventListener('input', (e) => {
@@ -825,21 +989,10 @@ function setupAdminEventListeners() {
         }
         document.getElementById('admin-user-group-select').value = existingUser.group || 'Sin Grupo';
         setSelectAdminCourses(existingUser.allowedCourses || []);
-      } else {
-        allSchools.forEach(sch => {
-          if (sch.domain && typedEmail.endsWith(sch.domain.toLowerCase())) {
-            const schSelect = document.getElementById('admin-user-school-select');
-            if (schSelect) {
-              schSelect.value = sch.name;
-              updateGroupSelectDropdown(sch.name, 'admin-user-group-select');
-            }
-          }
-        });
       }
     });
   }
 
-  // Formulario Individual Alumno con Validación de Dominio y Notificación Válida EmailJS
   const formSingle = document.getElementById('admin-single-user-form');
   if (formSingle) {
     formSingle.addEventListener('submit', async (e) => {
@@ -852,32 +1005,53 @@ function setupAdminEventListeners() {
       const role = roleSelect ? roleSelect.value : 'student';
       const school = schoolSelect ? schoolSelect.value : 'General';
       const group = groupSelect ? groupSelect.value : 'Sin Grupo';
-      const allowedCourses = getSelectedCoursesFromAdmin();
+      const newAllowedCourses = getSelectedCoursesFromAdmin();
 
       if (!email) return;
 
-      // VALIDACIÓN DE DOMINIO EN ALTA INDIVIDUAL
       const schoolObj = allSchools.find(s => s.name === school);
-      if (schoolObj && schoolObj.domain && schoolObj.domain.trim() !== '') {
+      const isTeacherOrAdmin = ['teacher', 'profesor', 'docente', 'maestro', 'admin'].includes(role.toLowerCase());
+
+      if (schoolObj && schoolObj.domain && schoolObj.domain.trim() !== '' && !isTeacherOrAdmin) {
         const requiredDomain = schoolObj.domain.trim().toLowerCase();
         if (!email.endsWith(requiredDomain)) {
-          showToast(`El correo debe pertenecer al dominio institucional (${requiredDomain})`, "error");
+          showToast(`El correo del alumno debe pertenecer al dominio institucional (${requiredDomain})`, "error");
           return;
         }
       }
 
       try {
-        await setDoc(doc(db, "assigned_roles", email), {
+        const userRef = doc(db, "assigned_roles", email);
+        const userSnap = await getDoc(userRef);
+
+        let schoolsList = [school];
+        let groupsList = [group];
+        let coursesList = newAllowedCourses;
+
+        if (userSnap.exists()) {
+          const existingData = userSnap.data();
+          const prevSchools = existingData.schools || [existingData.school || 'General'];
+          const prevGroups = existingData.groups || [existingData.group || 'Sin Grupo'];
+          const prevCourses = existingData.allowedCourses || [];
+
+          schoolsList = Array.from(new Set([...prevSchools, school]));
+          groupsList = Array.from(new Set([...prevGroups, group]));
+          coursesList = Array.from(new Set([...prevCourses, ...newAllowedCourses]));
+        }
+
+        await setDoc(userRef, {
           email: email,
           role: role,
           school: school,
+          schools: schoolsList,
           group: group,
-          allowedCourses: allowedCourses,
+          groups: groupsList,
+          allowedCourses: coursesList,
           updatedAt: new Date().toISOString()
         }, { merge: true });
 
         await sendNotificationEmail(email, role, school);
-        showToast(`Acceso guardado y notificado para ${email}`, "success");
+        showToast(`Acceso guardado y acumulado correctamente para ${email}`, "success");
         formSingle.reset();
         setSelectAdminCourses([]);
       } catch (err) {
